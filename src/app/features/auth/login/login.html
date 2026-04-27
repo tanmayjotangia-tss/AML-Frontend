@@ -1,0 +1,90 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="card-header">
+      <div class="logo-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h2>AML Compliance System</h2>
+      <p class="subtitle" *ngIf="!isFirstLogin">Please sign in to continue</p>
+      <p class="subtitle highlight" *ngIf="isFirstLogin">Action Required: Update Password</p>
+    </div>
+
+    <!-- Error Message Alert -->
+    <div class="alert alert-error" *ngIf="loginError">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="alert-icon">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      {{ loginError }}
+    </div>
+
+    <!-- Step 1: Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" *ngIf="!isFirstLogin" class="auth-form">
+      
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrapper">
+          <input type="email" id="email" formControlName="email" placeholder="name@institution.com" autocomplete="email">
+        </div>
+        <div class="error-text" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid">
+          Please enter a valid email address.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="password" formControlName="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loginForm.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Sign In</span>
+        <span *ngIf="isSubmitting" class="loader"></span>
+      </button>
+    </form>
+
+    <!-- Step 2: Change Password Form (First Login) -->
+    <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePasswordSubmit()" *ngIf="isFirstLogin" class="auth-form">
+      <div class="info-text">
+        For your security, you must change your temporary password before accessing the system.
+      </div>
+
+      <div class="form-group" style="display: none;">
+        <input type="password" formControlName="oldPassword">
+      </div>
+
+      <div class="form-group">
+        <label for="newPassword">New Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="newPassword" formControlName="newPassword" placeholder="Minimum 8 characters">
+        </div>
+        <div class="error-text" *ngIf="changePasswordForm.get('newPassword')?.touched && changePasswordForm.get('newPassword')?.invalid">
+          Password must be at least 8 characters.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="confirmPassword" formControlName="confirmPassword" placeholder="Confirm your new password">
+        </div>
+        <div class="error-text" *ngIf="changePasswordForm.hasError('mismatch') && changePasswordForm.get('confirmPassword')?.touched">
+          Passwords do not match.
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="changePasswordForm.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Update Password & Continue</span>
+        <span *ngIf="isSubmitting" class="loader"></span>
+      </button>
+    </form>
+
+    <div class="card-footer">
+      <p>Secure system access.</p>
+    </div>
+  </div>
+</div>
