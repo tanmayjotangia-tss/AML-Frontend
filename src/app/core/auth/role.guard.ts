@@ -18,12 +18,12 @@ export const roleGuard: CanActivateFn = (route, state) => {
   }
 
   // User doesn't have the required role. Redirect based on what role they do have.
-  if (userRole === 'PLATFORM_ADMIN') {
+  if (userRole === 'SUPER_ADMIN') {
     router.navigate(['/system/dashboard']);
   } else if (userRole === 'BANK_ADMIN' || userRole === 'COMPLIANCE_OFFICER') {
     router.navigate(['/tenant/dashboard']);
   } else {
-    router.navigate(['/admin-login']);
+    router.navigate(['/login']);
   }
   
   return false;

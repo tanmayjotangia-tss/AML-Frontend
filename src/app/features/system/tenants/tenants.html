@@ -1,1 +1,112 @@
-<p>tenants works!</p>
+<div class="tenants-container">
+  <div class="tenants-header">
+    <div>
+      <h1 class="header-title">Tenant Management</h1>
+      <p class="header-subtitle">Provision and manage financial institutions</p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+      <button class="btn-primary" (click)="openCreateForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Register Tenant
+      </button>
+    </div>
+  </div>
+
+  <div class="error-alert" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="data-table-card">
+    
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Loading tenants...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && tenants.length === 0 && !error">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem;">
+          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect>
+        </svg>
+      </div>
+      <h3 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #0f172a;">No Tenants Found</h3>
+      <p style="margin: 0 0 1.5rem 0; font-size: 0.875rem;">Get started by provisioning your first tenant.</p>
+      <button class="btn-ghost" (click)="openCreateForm()">Provision Tenant</button>
+    </div>
+
+    <div class="table-wrapper" *ngIf="!isLoading && tenants.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Institution</th>
+            <th>Code</th>
+            <th>Schema</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tenant of tenants" (click)="viewTenantDetail(tenant)" style="cursor: pointer;">
+            <td>
+              <div style="font-weight: 500; color: #0f172a;">{{ tenant.institutionName }}</div>
+              <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">{{ tenant.contactEmail || 'No email provided' }}</div>
+            </td>
+            <td>
+              <span style="display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background-color: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0;">
+                {{ tenant.tenantCode }}
+              </span>
+            </td>
+            <td style="font-family: monospace; font-size: 0.875rem; color: #64748b;">{{ tenant.schemaName }}</td>
+            <td>
+              <div style="font-weight: 500; color: #0f172a;">{{ tenant.countryCode }}</div>
+              <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">{{ tenant.regulatoryJurisdiction || 'N/A' }}</div>
+            </td>
+            <td>
+              <span class="status-pill"
+                    [ngClass]="{
+                      'active': tenant.status === 'ACTIVE',
+                      'suspended': tenant.status === 'SUSPENDED',
+                      'deactivated': tenant.status === 'DEACTIVATED'
+                    }">
+                <span class="status-dot"
+                      [ngClass]="{
+                        'active': tenant.status === 'ACTIVE',
+                        'suspended': tenant.status === 'SUSPENDED',
+                        'deactivated': tenant.status === 'DEACTIVATED'
+                      }"></span>
+                {{ tenant.status }}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Edit">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Reset Admin Credentials" *ngIf="tenant.status === 'ACTIVE'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<app-tenant-form 
+  *ngIf="showCreateForm" 
+  (close)="closeCreateForm()" 
+  (saved)="onTenantCreated()">
+</app-tenant-form>
+
+<app-tenant-detail
+  *ngIf="viewingTenant"
+  [tenant]="viewingTenant"
+  (close)="closeTenantDetail()"
+  (statusChanged)="loadTenants()">
+</app-tenant-detail>

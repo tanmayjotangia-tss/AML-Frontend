@@ -1,0 +1,111 @@
+<div class="drawer-overlay" (click)="onCancel()">
+  <div class="drawer-container" (click)="$event.stopPropagation()">
+    
+    <div class="drawer-header">
+      <h2>Provision New Tenant</h2>
+      <button class="close-btn" (click)="onCancel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1.25rem; height: 1.25rem;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="drawer-content">
+      <div class="alert-error" *ngIf="submitError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem; color: #ef4444; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>{{ submitError }}</span>
+      </div>
+
+      <form [formGroup]="tenantForm" (ngSubmit)="onSubmit()">
+        <div style="margin-bottom: 2rem;">
+          <h3 class="form-section-title">Core Details</h3>
+          
+          <div class="form-group">
+            <label for="institutionName" class="form-label">Institution Name <span style="color: #ef4444;">*</span></label>
+            <input type="text" id="institutionName" formControlName="institutionName" placeholder="e.g. State Bank of India"
+                   class="form-input"
+                   [class.invalid]="f['institutionName'].touched && f['institutionName'].errors?.['required']">
+            <div class="form-error" *ngIf="f['institutionName'].touched && f['institutionName'].errors?.['required']">Institution name is required.</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div class="form-group">
+              <label for="tenantCode" class="form-label">Tenant Code <span style="color: #ef4444;">*</span></label>
+              <input type="text" id="tenantCode" formControlName="tenantCode" placeholder="e.g. SBI"
+                     class="form-input" style="text-transform: uppercase;"
+                     [class.invalid]="f['tenantCode'].touched && f['tenantCode'].invalid">
+              <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['required']">Tenant code is required.</div>
+              <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['pattern']">Must be uppercase alphanumeric.</div>
+              <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['codeTaken']">This tenant code is already in use.</div>
+              <div class="form-help" *ngIf="f['tenantCode'].pending">Validating availability...</div>
+            </div>
+            
+            <div class="form-group">
+              <label for="schemaName" class="form-label">Schema Name <span style="color: #ef4444;">*</span></label>
+              <input type="text" id="schemaName" formControlName="schemaName" placeholder="e.g. t_sbi"
+                     class="form-input" style="text-transform: lowercase;"
+                     [class.invalid]="f['schemaName'].touched && f['schemaName'].invalid">
+              <div class="form-error" *ngIf="f['schemaName'].touched && f['schemaName'].errors?.['required']">Schema name is required.</div>
+              <div class="form-error" *ngIf="f['schemaName'].touched && f['schemaName'].errors?.['pattern']">Must be lowercase alphanumeric with underscores.</div>
+              <div class="form-error" *ngIf="f['schemaName'].touched && f['schemaName'].errors?.['schemaTaken']">This schema name is already in use.</div>
+              <div class="form-help" *ngIf="f['schemaName'].pending">Validating availability...</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+          <h3 class="form-section-title">Regulatory & Location</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div class="form-group">
+              <label for="countryCode" class="form-label">Country Code <span style="color: #ef4444;">*</span></label>
+              <input type="text" id="countryCode" formControlName="countryCode" placeholder="e.g. IND"
+                     class="form-input" style="text-transform: uppercase;"
+                     [class.invalid]="f['countryCode'].touched && f['countryCode'].errors?.['required']">
+              <div class="form-error" *ngIf="f['countryCode'].touched && f['countryCode'].errors?.['required']">Country code is required.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="regulatoryJurisdiction" class="form-label">Jurisdiction</label>
+              <input type="text" id="regulatoryJurisdiction" formControlName="regulatoryJurisdiction" placeholder="e.g. RBI"
+                     class="form-input">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="address" class="form-label">Headquarters Address</label>
+            <textarea id="address" formControlName="address" rows="2" placeholder="Full address"
+                      class="form-input" style="resize: vertical; min-height: 80px;"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+          <h3 class="form-section-title">Primary Contact</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="contactEmail" class="form-label">Admin Email</label>
+              <input type="email" id="contactEmail" formControlName="contactEmail" placeholder="admin@institution.com"
+                     class="form-input"
+                     [class.invalid]="f['contactEmail'].touched && f['contactEmail'].errors?.['email']">
+              <div class="form-error" *ngIf="f['contactEmail'].touched && f['contactEmail'].errors?.['email']">Enter a valid email.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="contactPhone" class="form-label">Admin Phone</label>
+              <input type="text" id="contactPhone" formControlName="contactPhone" placeholder="+91 1234567890"
+                     class="form-input">
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="drawer-footer">
+      <button type="button" class="btn-ghost" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
+      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="tenantForm.invalid || tenantForm.pending || isSubmitting">
+        <span *ngIf="!isSubmitting">Provision Tenant</span>
+        <div *ngIf="isSubmitting" class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>

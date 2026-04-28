@@ -1,7 +1,7 @@
 export interface LoginRequestDto {
   email: string;
   password: string;
-  tenantAlias?: string; // Short code like 'SBI', 'HDFC'
+  tenantCode?: string; 
 }
 
 export interface LoginResponseDto {
@@ -10,7 +10,7 @@ export interface LoginResponseDto {
   tokenType: string;
   username: string;
   role: string;
-  tenantId?: string; // Null for Platform Users
+  tenantId?: string;
   isFirstLogin: boolean;
 }
 
@@ -21,5 +21,4 @@ export interface TokenRefreshRequestDto {
 export interface ChangePasswordRequestDto {
   oldPassword: string;
   newPassword: string;
-  confirmPassword: string;
 }

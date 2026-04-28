@@ -1,0 +1,90 @@
+<div class="detail-overlay" (click)="close.emit()">
+  <div class="detail-drawer" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="drawer-header">
+      <div class="header-main">
+        <div class="institution-avatar">
+          {{ tenant.institutionName.substring(0, 2).toUpperCase() }}
+        </div>
+        <div>
+          <h2 class="institution-name">{{ tenant.institutionName }}</h2>
+          <div class="status-badge-row">
+            <span class="tenant-code">{{ tenant.tenantCode }}</span>
+            <span class="status-pill" [ngClass]="tenant.status.toLowerCase()">
+              {{ tenant.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <button class="close-btn" (click)="close.emit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="drawer-content">
+      <!-- Info Sections -->
+      <section class="info-section">
+        <h3 class="section-title">Institutional Identity</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Legal Entity Name</label>
+            <span>{{ tenant.institutionName }}</span>
+          </div>
+          <div class="info-item">
+            <label>Short Code</label>
+            <span class="mono-text">{{ tenant.tenantCode }}</span>
+          </div>
+          <div class="info-item">
+            <label>Database Schema</label>
+            <span class="mono-text">{{ tenant.schemaName }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="info-section">
+        <h3 class="section-title">Jurisdiction & Compliance</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Primary Country</label>
+            <span>{{ tenant.countryCode }}</span>
+          </div>
+          <div class="info-item">
+            <label>Regulatory Authority</label>
+            <span>{{ tenant.regulatoryJurisdiction || 'Standard Financial Authority' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="info-section">
+        <h3 class="section-title">Administrative Contact</h3>
+        <div class="contact-card">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </div>
+          <div class="contact-info">
+            <span class="contact-email">{{ tenant.contactEmail || 'No administrative email set' }}</span>
+            <span class="contact-label">System Administrator</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="drawer-footer">
+      <button class="btn-outline-amber" (click)="edit.emit(tenant)">
+        Edit Profile
+      </button>
+      <button class="btn-outline-blue">
+        Credentials Reset
+      </button>
+      <div style="flex: 1"></div>
+      <button class="btn-danger" *ngIf="tenant.status === 'ACTIVE'">
+        Deactivate
+      </button>
+      <button class="btn-success" *ngIf="tenant.status !== 'ACTIVE'">
+        Reactivate
+      </button>
+    </div>
+  </div>
+</div>

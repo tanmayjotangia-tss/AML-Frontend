@@ -6,14 +6,14 @@ import { authGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'admin-login', pathMatch: 'full' },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: Login, data: { isPlatform: false } },
   { path: 'admin-login', component: Login, data: { isPlatform: true } },
-  { path: ':tenantCode/login', component: Login, data: { isPlatform: false } },
   {
     path: 'system',
     component: SystemLayout,
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['PLATFORM_ADMIN'] },
+    data: { roles: ['SUPER_ADMIN'] },
     children: [
       { path: 'dashboard', loadComponent: () => import('./features/system/dashboard/dashboard').then(m => m.Dashboard) },
       { path: 'rule-engine', loadComponent: () => import('./features/system/rule-engine/rule-engine').then(m => m.RuleEngine) },

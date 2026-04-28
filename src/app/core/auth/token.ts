@@ -15,7 +15,8 @@ export class TokenService {
   }
 
   saveUserInfo(role: string, tenantId?: string): void {
-    localStorage.setItem(this.ROLE_KEY, role);
+    const formattedRole = role && role.startsWith('ROLE_') ? role.substring(5) : role;
+    localStorage.setItem(this.ROLE_KEY, formattedRole);
     if (tenantId) {
       localStorage.setItem(this.TENANT_ID_KEY, tenantId);
     } else {

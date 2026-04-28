@@ -12,12 +12,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const tenantId = tokenService.getTenantId();
 
   let headers = req.headers;
+  
+  // Do not attach tokens or tenant IDs for login requests
+  const isAuthRequest = req.url.includes('/auth/login');
 
-  if (token) {
+  if (token && !isAuthRequest) {
     headers = headers.set('Authorization', `Bearer ${token}`);
   }
 
-  if (tenantId) {
+  if (tenantId && !isAuthRequest) {
     headers = headers.set('X-Tenant-ID', tenantId);
   }
 
@@ -28,10 +31,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         // The token has expired or has been blacklisted by JtiBlacklistService
         console.warn('Session expired or revoked. Forcing logout.');
+        const role = tokenService.getRole();
         tokenService.clear();
         
-        // Redirect to login.
-        router.navigate(['/admin-login']);
+        if (role === 'SUPER_ADMIN') {
+          router.navigate(['/admin-login']);
+        } else {
+          router.navigate(['/login']);
+        }
       }
       return throwError(() => error);
     })

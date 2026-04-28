@@ -1,1 +1,278 @@
-<p>rule-engine works!</p>
+<div class="rule-engine-container">
+  <div class="rule-engine-header">
+    <div>
+      <h1 class="header-title">Rule Engine Settings</h1>
+      <p class="header-subtitle">Configure global compliance thresholds, transaction scenarios, and risk parameters</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-navigation">
+    <nav class="tabs-list">
+      <a href="javascript:void(0)" 
+         class="tab-item"
+         [ngClass]="{'active': activeTab === 'GEO_RISK'}"
+         (click)="setTab('GEO_RISK')">
+        Geographic Risk Ratings
+      </a>
+      <a href="javascript:void(0)" 
+         class="tab-item"
+         [ngClass]="{'active': activeTab === 'SCENARIOS'}"
+         (click)="setTab('SCENARIOS')">
+        Transaction Scenarios
+      </a>
+      <a href="javascript:void(0)" 
+         class="tab-item"
+         [ngClass]="{'active': activeTab === 'GLOBAL_RULES'}"
+         (click)="setTab('GLOBAL_RULES')">
+        Global Rules Repository
+      </a>
+    </nav>
+  </div>
+
+  <!-- =============================== -->
+  <!-- TAB: GLOBAL RULES REPOSITORY    -->
+  <!-- =============================== -->
+  <div *ngIf="activeTab === 'GLOBAL_RULES'" class="tab-content">
+    <div class="section-header">
+      <h2 class="section-title">Global Rules Repository</h2>
+      <p class="header-subtitle">Read-only view of all system-seeded rules available for grouping into scenarios.</p>
+    </div>
+
+    <div class="error-message" *ngIf="errorGlobalRules">
+      {{ errorGlobalRules }}
+    </div>
+
+    <div class="data-card">
+      <div class="loading-overlay" *ngIf="isLoadingGlobalRules">
+        <div class="spinner"></div>
+        <p>Loading global rules...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoadingGlobalRules && globalRules.length === 0 && !errorGlobalRules">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+        </div>
+        <h3 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #0f172a;">No Global Rules Found</h3>
+        <p style="margin: 0; font-size: 0.875rem;">There are currently no rules seeded in the system.</p>
+      </div>
+
+      <div class="table-container" *ngIf="!isLoadingGlobalRules && globalRules.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Rule Name</th>
+              <th>Type</th>
+              <th>Severity</th>
+              <th style="text-align: center">Base Risk Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rule of globalRules">
+              <td>
+                <span style="font-weight: 500; color: #0f172a;">{{ rule.ruleName }}</span>
+              </td>
+              <td>
+                <span class="pill-badge">{{ rule.ruleType }}</span>
+              </td>
+              <td>
+                <span style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 500;">
+                  <div style="width: 0.375rem; height: 0.375rem; border-radius: 50%;" 
+                       [ngClass]="{'bg-red-500': rule.severity === 'HIGH' || rule.severity === 'CRITICAL', 'bg-amber-500': rule.severity === 'MEDIUM', 'bg-emerald-500': rule.severity === 'LOW'}"></div>
+                  {{ rule.severity }}
+                </span>
+              </td>
+              <td style="text-align: center">
+                <span style="font-weight: 500; color: #334155;">{{ rule.baseRiskScore }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================== -->
+  <!-- TAB: GEOGRAPHIC RISK RATINGS    -->
+  <!-- =============================== -->
+  <div *ngIf="activeTab === 'GEO_RISK'" class="tab-content">
+    <div class="section-header">
+      <h2 class="section-title">Geographic Risk Ratings</h2>
+      <button class="btn-primary" (click)="openGeoForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Rating
+      </button>
+    </div>
+
+    <div class="error-message" *ngIf="errorRatings">
+      {{ errorRatings }}
+    </div>
+
+    <div class="data-card">
+      <div class="loading-overlay" *ngIf="isLoadingRatings">
+        <div class="spinner"></div>
+        <p>Loading ratings...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoadingRatings && ratings.length === 0 && !errorRatings">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+        <h3 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #0f172a;">No Ratings Configured</h3>
+        <p style="margin: 0 0 1.5rem 0; font-size: 0.875rem;">Add a geographic risk rating to start monitoring high-risk regions.</p>
+        <button class="btn-ghost" (click)="openGeoForm()">Add Rating</button>
+      </div>
+
+      <div class="table-container" *ngIf="!isLoadingRatings && ratings.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th>Risk Tier</th>
+              <th>FATF Status</th>
+              <th>Basel Score</th>
+              <th>Effective Date</th>
+              <th style="text-align: right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rating of ratings">
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 2rem; height: 2rem; border-radius: 50%; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: #475569; border: 1px solid #e2e8f0;">{{ rating.countryCode }}</div>
+                  <div style="font-weight: 500; color: #0f172a;">{{ rating.countryName }}</div>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge"
+                      [ngClass]="{'low': rating.riskTier === 'LOW', 'medium': rating.riskTier === 'MEDIUM', 'high': rating.riskTier === 'HIGH' || rating.riskTier === 'EXTREME'}">
+                  {{ rating.riskTier }}
+                </span>
+              </td>
+              <td>
+                <span class="pill-badge" style="padding: 0.25rem 0.5rem; background-color: #f1f5f9;">
+                  {{ rating.fatfStatus ? rating.fatfStatus.replace('_', ' ') : 'N/A' }}
+                </span>
+              </td>
+              <td>
+                <div class="risk-bar-container">
+                  <div class="risk-bar-track">
+                    <div class="risk-bar-fill" [style.width.%]="rating.baselAmlIndexScore"
+                         [ngClass]="{'low': rating.baselAmlIndexScore < 40, 'medium': rating.baselAmlIndexScore >= 40 && rating.baselAmlIndexScore < 70, 'high': rating.baselAmlIndexScore >= 70}"></div>
+                  </div>
+                  <span style="font-size: 0.875rem; font-weight: 500; color: #475569; width: 1.5rem;">{{ rating.baselAmlIndexScore }}</span>
+                </div>
+              </td>
+              <td style="font-size: 0.875rem; color: #64748b;">{{ rating.effectiveFrom | date:'mediumDate' }}</td>
+              <td style="text-align: right">
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                  <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Edit" (click)="openGeoEditForm(rating)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                  <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Delete" (click)="deleteRating(rating.countryCode)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================== -->
+  <!-- TAB: TRANSACTION SCENARIOS      -->
+  <!-- =============================== -->
+  <div *ngIf="activeTab === 'SCENARIOS'" class="tab-content">
+    
+    <!-- IF NO SCENARIO IS SELECTED (LIST VIEW) -->
+    <div *ngIf="!viewingScenarioDetail">
+      <div class="section-header">
+        <h2 class="section-title">Transaction Scenarios</h2>
+        <button class="btn-primary" (click)="openScenarioForm()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Create Scenario
+        </button>
+      </div>
+
+      <div class="error-message" *ngIf="errorScenarios">
+        {{ errorScenarios }}
+      </div>
+
+      <div class="scenario-grid">
+        
+        <div class="loading-overlay" style="grid-column: 1 / -1; background-color: #fff; border-radius: 1rem; border: 1px solid #f1f5f9;" *ngIf="isLoadingScenarios">
+          <div class="spinner"></div>
+          <p>Loading scenarios...</p>
+        </div>
+
+        <div class="empty-state" style="grid-column: 1 / -1; background-color: #fff; border-radius: 1rem; border: 1px solid #f1f5f9;" *ngIf="!isLoadingScenarios && scenarios.length === 0 && !errorScenarios">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <h3 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #0f172a;">No Scenarios Configured</h3>
+          <p style="margin: 0 0 1.5rem 0; font-size: 0.875rem;">Create a scenario to group rules and monitor complex behaviors.</p>
+          <button class="btn-ghost" (click)="openScenarioForm()">Create Scenario</button>
+        </div>
+
+        <!-- Scenario Cards -->
+        <ng-container *ngIf="!isLoadingScenarios && scenarios.length > 0">
+          <div *ngFor="let scenario of scenarios" 
+               class="scenario-card"
+               (click)="viewScenarioDetail(scenario)">
+            
+            <div class="scenario-card-header">
+              <span class="pill-badge">
+                {{ scenario.category }}
+              </span>
+              
+              <!-- Card Actions -->
+              <div style="display: flex; gap: 0.25rem;">
+                <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Edit" (click)="openScenarioEditForm(scenario, $event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Delete" (click)="deleteScenario(scenario, $event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <h3 class="scenario-title">{{ scenario.scenarioName }}</h3>
+            <p class="scenario-desc">{{ scenario.description || 'No description provided.' }}</p>
+            
+            <div class="scenario-card-footer">
+              <span style="display: flex; align-items: center; gap: 0.375rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                {{ scenario.sysCreatedAt | date:'mediumDate' }}
+              </span>
+              <span class="manage-link">Manage Rules &rarr;</span>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+
+    <!-- IF SCENARIO IS SELECTED (DETAIL VIEW) -->
+    <div *ngIf="viewingScenarioDetail">
+      <app-scenario-detail 
+        [scenario]="viewingScenarioDetail" 
+        (back)="closeScenarioDetail()">
+      </app-scenario-detail>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Drawers -->
+<app-geo-risk-form 
+  *ngIf="showGeoForm" 
+  [editData]="selectedRating"
+  (close)="closeGeoForm()" 
+  (saved)="onGeoSaved()">
+</app-geo-risk-form>
+
+<app-scenario-form
+  *ngIf="showScenarioForm"
+  [editData]="selectedScenarioForEdit"
+  (close)="closeScenarioForm()"
+  (saved)="onScenarioSaved()">
+</app-scenario-form>

@@ -1,0 +1,88 @@
+<div class="detail-container">
+  <!-- Header -->
+  <div class="detail-header">
+    <div class="detail-header-left">
+      <button class="back-btn" (click)="back.emit()" title="Back to Scenarios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </button>
+      <div>
+        <div class="detail-title-row">
+          <h2 class="detail-title">{{ scenario.scenarioName }}</h2>
+          <span class="detail-category">{{ scenario.category }}</span>
+        </div>
+        <p class="detail-description">{{ scenario.description || 'No description provided.' }}</p>
+      </div>
+    </div>
+    <button class="btn-primary" (click)="openRuleMapper()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Map Rule
+    </button>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="data-card">
+    <div style="padding: 1rem; border-bottom: 1px solid #f1f5f9; background-color: rgba(248, 250, 252, 0.5);">
+      <h3 style="margin: 0; font-size: 0.875rem; font-weight: 600; color: #475569;">Mapped Rules Configuration</h3>
+    </div>
+
+    <div class="loading-overlay" *ngIf="isLoading">
+      <div class="spinner" style="border-top-color: #2563eb; border-width: 4px; width: 2rem; height: 2rem;"></div>
+      <p>Loading mapped rules...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && mappedRules.length === 0 && !error">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem;">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+        </svg>
+      </div>
+      <h3 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #0f172a;">No Rules Mapped</h3>
+      <p style="margin: 0 0 1.5rem 0; font-size: 0.875rem; max-width: 24rem; text-align: center;">This scenario currently has no rules assigned to it. Map global rules to configure the scenario's execution logic.</p>
+      <button class="btn-ghost" (click)="openRuleMapper()">Map First Rule</button>
+    </div>
+
+    <div class="table-container" *ngIf="!isLoading && mappedRules.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Rule Details</th>
+            <th style="text-align: right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rule of mappedRules">
+            <td>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-weight: 500; color: #0f172a;">{{ rule.ruleName }}</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                  <span class="pill-badge" style="font-size: 0.625rem;">{{ rule.ruleType }}</span>
+                  <span style="width: 0.25rem; height: 0.25rem; border-radius: 50%; background-color: #cbd5e1;"></span>
+                  <span style="font-size: 0.75rem; color: #64748b;">Score: {{ rule.baseRiskScore }}</span>
+                </div>
+              </div>
+            </td>
+            <td style="text-align: right">
+              <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Remove Rule" (click)="removeRule(rule)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<app-scenario-rule-mapper
+  *ngIf="showRuleMapper"
+  [scenarioId]="scenario.id"
+  [excludeRuleIds]="getMappedRuleIds()"
+  (close)="closeRuleMapper()"
+  (mapped)="onRuleMapped()">
+</app-scenario-rule-mapper>

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -12,7 +12,7 @@ import { LoginRequestDto, ChangePasswordRequestDto } from '../../../core/auth/mo
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class Login {
+export class Login implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -25,13 +25,12 @@ export class Login {
   loginError = '';
   isFirstLogin = false;
   isPlatform = false;
-  tenantCode: string | null = null;
-  
   // Track credentials to use if change password is required
   private currentEmail = '';
 
   constructor() {
     this.loginForm = this.fb.group({
+      tenantCode: [''],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]]
     });
@@ -41,13 +40,15 @@ export class Login {
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+  }
 
+  ngOnInit() {
     this.route.data.subscribe(data => {
       this.isPlatform = data['isPlatform'] === true;
-    });
-
-    this.route.paramMap.subscribe(params => {
-      this.tenantCode = params.get('tenantCode');
+      if (!this.isPlatform) {
+        this.loginForm.get('tenantCode')?.setValidators([Validators.required]);
+        this.loginForm.get('tenantCode')?.updateValueAndValidity();
+      }
     });
   }
 
@@ -67,8 +68,8 @@ export class Login {
       password: this.loginForm.value.password
     };
     
-    if (!this.isPlatform && this.tenantCode) {
-      req.tenantAlias = this.tenantCode;
+    if (!this.isPlatform) {
+      req.tenantCode = this.loginForm.value.tenantCode;
     }
 
     this.currentEmail = req.email;
@@ -77,12 +78,14 @@ export class Login {
       next: (res) => {
         this.isSubmitting = false;
         
-        if (res.data?.isFirstLogin) {
+        const role = res.data?.role;
+        const isSuperAdmin = role === 'SUPER_ADMIN' || role === 'ROLE_SUPER_ADMIN';
+        
+        if (res.data?.isFirstLogin && !isSuperAdmin) {
           this.isFirstLogin = true;
-          // Pre-fill the old password for convenience if we wanted to, but let's let user type it or pre-fill it behind the scenes
           this.changePasswordForm.patchValue({ oldPassword: req.password });
         } else {
-          this.routeUser(res.data?.role);
+          this.routeUser(role);
         }
       },
       error: (err) => {
@@ -98,7 +101,11 @@ export class Login {
     this.isSubmitting = true;
     this.loginError = '';
 
-    const req: ChangePasswordRequestDto = this.changePasswordForm.value;
+    const formValue = this.changePasswordForm.value;
+    const req: ChangePasswordRequestDto = {
+      oldPassword: formValue.oldPassword,
+      newPassword: formValue.newPassword
+    };
 
     this.authService.changePassword(req).subscribe({
       next: () => {
@@ -118,7 +125,8 @@ export class Login {
   }
 
   private routeUser(role: string | undefined) {
-    if (role === 'PLATFORM_ADMIN') {
+    const formattedRole = role?.startsWith('ROLE_') ? role.substring(5) : role;
+    if (formattedRole === 'SUPER_ADMIN') {
       this.router.navigate(['/system/dashboard']);
     } else {
       this.router.navigate(['/tenant/dashboard']);

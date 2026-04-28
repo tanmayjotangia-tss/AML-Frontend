@@ -1,0 +1,94 @@
+<div class="modal-overlay" (click)="onCancel()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <div>
+        <h2>Map Rule to Scenario</h2>
+        <p>Select an existing global rule to include in this scenario.</p>
+      </div>
+      <button class="btn-ghost" style="padding: 0.5rem; border: none; border-radius: 50%;" (click)="onCancel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1.25rem; height: 1.25rem;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <div class="error-message" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;" *ngIf="error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1.25rem; height: 1.25rem; color: #ef4444; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>{{ error }}</span>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoadingRules">
+        <div class="spinner" style="border-top-color: #2563eb; border-width: 3px; width: 2rem; height: 2rem; margin-bottom: 1rem;"></div>
+        <p style="font-size: 0.875rem;">Loading available rules...</p>
+      </div>
+
+      <!-- Rules List -->
+      <div *ngIf="!isLoadingRules && !selectedRule">
+        <div class="rules-card">
+          <div class="rules-card-header">
+            <span>Available Rules ({{rules.length}})</span>
+          </div>
+          
+          <div class="rules-scroll">
+            <div style="padding: 2rem; text-align: center; color: #64748b; font-size: 0.875rem;" *ngIf="rules.length === 0">
+              No global rules found. Please create rules first.
+            </div>
+
+            <ul class="rule-list">
+              <li *ngFor="let rule of rules" class="rule-list-item" (click)="selectRule(rule)">
+                <div class="rule-main-info">
+                  <div class="rule-title-row">
+                    <span class="rule-name">{{ rule.ruleName }}</span>
+                    <span class="type-badge">{{ rule.ruleType }}</span>
+                  </div>
+                  <div class="rule-meta-row">
+                    <span class="severity-info">
+                      <div class="severity-dot" 
+                           [ngClass]="{'bg-red-500': rule.severity === 'HIGH' || rule.severity === 'CRITICAL', 'bg-amber-500': rule.severity === 'MEDIUM', 'bg-emerald-500': rule.severity === 'LOW'}"></div>
+                      {{ rule.severity }}
+                    </span>
+                    <span>Risk Score: {{ rule.baseRiskScore }}</span>
+                  </div>
+                </div>
+                <button class="select-btn">
+                  Select
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Rule Configuration -->
+      <div *ngIf="selectedRule" style="animation: fadeIn 0.2s ease-out;">
+        <button class="back-link" (click)="cancelSelection()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1rem; height: 1rem;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Back to list
+        </button>
+
+        <div class="config-card">
+          <div class="config-header">
+            <div>
+              <h3 class="config-title">{{ selectedRule.ruleName }}</h3>
+              <p class="config-subtitle">Type: {{ selectedRule.ruleType }}</p>
+            </div>
+            <div class="score-badge">
+              Score: {{ selectedRule.baseRiskScore }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-ghost" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
+      <button type="button" class="btn-primary" 
+              [disabled]="!selectedRule || isSubmitting" (click)="onSubmit()" style="min-width: 140px;">
+        <span *ngIf="!isSubmitting">Map to Scenario</span>
+        <div *ngIf="isSubmitting" class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>

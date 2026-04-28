@@ -10,8 +10,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // If not authenticated, redirect to default admin login.
-  // Real users will know their /tenantAlias/login path.
-  router.navigate(['/admin-login']);
+  // If not authenticated, redirect to default login.
+  router.navigate(['/login']);
   return false;
 };

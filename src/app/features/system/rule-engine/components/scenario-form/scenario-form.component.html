@@ -1,0 +1,103 @@
+<div class="drawer-overlay" (click)="onCancel()">
+  <div class="drawer-container" (click)="$event.stopPropagation()">
+    
+    <div class="drawer-header">
+      <h2>{{ editData ? 'Edit Scenario' : 'Create Transaction Scenario' }}</h2>
+      <button class="close-btn" (click)="onCancel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1.25rem; height: 1.25rem;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="drawer-content">
+      <div class="alert-error" *ngIf="submitError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem; color: #ef4444; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>{{ submitError }}</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <div class="form-group">
+          <label for="scenarioName" class="form-label">Scenario Name <span style="color: #ef4444;">*</span></label>
+          <input type="text" id="scenarioName" formControlName="scenarioName" placeholder="e.g. High Velocity Cross-Border"
+                 class="form-input"
+                 [class.invalid]="f['scenarioName'].touched && f['scenarioName'].invalid">
+          <div class="form-error" *ngIf="f['scenarioName'].touched && f['scenarioName'].errors?.['required']">Scenario name is required.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="category" class="form-label">Category <span style="color: #ef4444;">*</span></label>
+          <select id="category" formControlName="category"
+                  class="form-input"
+                  [class.invalid]="f['category'].touched && f['category'].invalid">
+            <option value="" disabled selected>Select a category</option>
+            <option value="STRUCTURING">Structuring</option>
+            <option value="VELOCITY">Velocity</option>
+            <option value="GEOGRAPHIC">Geographic</option>
+            <option value="WATCHLIST">Watchlist</option>
+            <option value="COMPLEX_NETWORK">Complex Network</option>
+            <option value="OTHER">Other</option>
+          </select>
+          <div class="form-error" *ngIf="f['category'].touched && f['category'].errors?.['required']">Category is required.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="description" class="form-label">Description</label>
+          <textarea id="description" formControlName="description" rows="4" placeholder="Describe what this scenario is monitoring..."
+                    class="form-input" style="resize: vertical; min-height: 80px;"></textarea>
+        </div>
+
+      </form>
+
+      <!-- Rule Selection (Only for Create Mode) -->
+      <div *ngIf="!editData" class="rule-selection-section">
+        <div class="rule-selection-header">
+          <div>
+            <h3 class="rule-selection-title">Initial Rule Mapping</h3>
+            <p class="rule-selection-subtitle">Select rules to automatically include in this scenario.</p>
+          </div>
+          <span class="selection-count">{{ selectedRuleIds.size }} selected</span>
+        </div>
+
+        <div class="loading-placeholder" *ngIf="isLoadingRules">
+          <div class="spinner" style="border-top-color: #2563eb; border-width: 2px; width: 1.25rem; height: 1.25rem; margin-bottom: 0.5rem;"></div>
+          <p style="font-size: 0.75rem; margin: 0;">Loading rules...</p>
+        </div>
+
+        <div class="loading-placeholder" *ngIf="!isLoadingRules && availableRules.length === 0">
+          <p style="font-size: 0.75rem; margin: 0;">No global rules available.</p>
+        </div>
+
+        <div class="rules-list-container" *ngIf="!isLoadingRules && availableRules.length > 0">
+          <div class="rules-list-scroll">
+            <ul class="rules-list">
+              <li *ngFor="let rule of availableRules" class="rule-item">
+                <input type="checkbox" [id]="'rule-' + rule.id" [checked]="selectedRuleIds.has(rule.id)" (change)="toggleRuleSelection(rule.id, $event)"
+                       class="rule-checkbox">
+                <label [for]="'rule-' + rule.id" class="rule-info">
+                  <div class="rule-name-row">
+                    <span class="rule-name">{{ rule.ruleName }}</span>
+                    <span class="rule-type-badge">{{ rule.ruleType }}</span>
+                  </div>
+                  <div class="rule-meta-row">
+                    <div class="severity-dot" 
+                         [ngClass]="{'bg-red-500': rule.severity === 'HIGH' || rule.severity === 'CRITICAL', 'bg-amber-500': rule.severity === 'MEDIUM', 'bg-emerald-500': rule.severity === 'LOW'}"></div>
+                    <span class="severity-text">{{ rule.severity }}</span>
+                  </div>
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="drawer-footer">
+      <button type="button" class="btn-ghost" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
+      <button type="button" class="btn-primary" style="min-width: 120px;" (click)="onSubmit()" [disabled]="form.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Save Scenario</span>
+        <div *ngIf="isSubmitting" class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>

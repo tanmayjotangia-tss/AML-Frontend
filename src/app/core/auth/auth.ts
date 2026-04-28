@@ -38,8 +38,13 @@ export class AuthService {
   }
 
   doLocalLogout(): void {
+    const role = this.tokenService.getRole();
     this.tokenService.clear();
-    this.router.navigate(['/login']);
+    if (role === 'SUPER_ADMIN') {
+      this.router.navigate(['/admin-login']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   isAuthenticated(): boolean {

@@ -1,0 +1,84 @@
+.topbar {
+  height: var(--topbar-height, 64px);
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-family: 'Inter', sans-serif;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 20px;
+  border-right: 1px solid #e2e8f0;
+}
+
+.role-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
+.avatar svg {
+  width: 16px;
+  height: 16px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.logout-btn:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.logout-btn svg {
+  width: 16px;
+  height: 16px;
+}

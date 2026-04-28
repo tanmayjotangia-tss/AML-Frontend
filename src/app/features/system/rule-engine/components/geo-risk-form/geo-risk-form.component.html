@@ -1,0 +1,89 @@
+<div class="drawer-overlay" (click)="onCancel()">
+  <div class="drawer-container" (click)="$event.stopPropagation()">
+    
+    <div class="drawer-header">
+      <h2>{{ editData ? 'Edit Rating' : 'Add Geographic Risk Rating' }}</h2>
+      <button class="close-btn" (click)="onCancel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1.25rem; height: 1.25rem;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="drawer-content">
+      <div class="alert-error" *ngIf="submitError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem; color: #ef4444; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>{{ submitError }}</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <div class="form-group">
+          <label for="countryCode" class="form-label">Country Code (ISO) <span style="color: #ef4444;">*</span></label>
+          <input type="text" id="countryCode" formControlName="countryCode" placeholder="e.g. IND or IN"
+                 class="form-input" style="text-transform: uppercase;"
+                 [class.invalid]="f['countryCode'].touched && f['countryCode'].invalid">
+          <div class="form-error" *ngIf="f['countryCode'].touched && f['countryCode'].errors?.['required']">Country code is required.</div>
+          <div class="form-error" *ngIf="f['countryCode'].touched && (f['countryCode'].errors?.['minlength'] || f['countryCode'].errors?.['maxlength'])">Must be 2 or 3 characters.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="countryName" class="form-label">Country Name <span style="color: #ef4444;">*</span></label>
+          <input type="text" id="countryName" formControlName="countryName" placeholder="e.g. India"
+                 class="form-input"
+                 [class.invalid]="f['countryName'].touched && f['countryName'].invalid">
+          <div class="form-error" *ngIf="f['countryName'].touched && f['countryName'].errors?.['required']">Country name is required.</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="riskTier" class="form-label">Risk Tier <span style="color: #ef4444;">*</span></label>
+            <select id="riskTier" formControlName="riskTier" class="form-input">
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fatfStatus" class="form-label">FATF Status <span style="color: #ef4444;">*</span></label>
+            <select id="fatfStatus" formControlName="fatfStatus" class="form-input">
+              <option value="COMPLIANT">Compliant</option>
+              <option value="GREY_LISTED">Grey Listed</option>
+              <option value="BLACK_LISTED">Black Listed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="baselAmlIndexScore" class="form-label">Basel AML Score (0-100) <span style="color: #ef4444;">*</span></label>
+          <input type="number" id="baselAmlIndexScore" formControlName="baselAmlIndexScore" placeholder="Score from 0 to 100" min="0" max="100"
+                 class="form-input"
+                 [class.invalid]="f['baselAmlIndexScore'].touched && f['baselAmlIndexScore'].invalid">
+          <div class="form-error" *ngIf="f['baselAmlIndexScore'].touched && f['baselAmlIndexScore'].invalid">Score must be between 0 and 100.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="effectiveFrom" class="form-label">Effective Date <span style="color: #ef4444;">*</span></label>
+          <input type="datetime-local" id="effectiveFrom" formControlName="effectiveFrom"
+                 class="form-input"
+                 [class.invalid]="f['effectiveFrom'].touched && f['effectiveFrom'].invalid">
+          <div class="form-error" *ngIf="f['effectiveFrom'].touched && f['effectiveFrom'].invalid">Effective date is required.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes" class="form-label">Internal Notes</label>
+          <textarea id="notes" formControlName="notes" rows="3" placeholder="Optional notes regarding this rating..."
+                    class="form-input" style="resize: vertical; min-height: 80px;"></textarea>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="drawer-footer">
+      <button type="button" class="btn-ghost" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
+      <button type="button" class="btn-primary" style="min-width: 120px;" (click)="onSubmit()" [disabled]="form.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Save Rating</span>
+        <div *ngIf="isSubmitting" class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
