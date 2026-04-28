@@ -14,7 +14,7 @@ export class AuthService {
   private tokenService = inject(TokenService);
   private router = inject(Router);
 
-  private readonly API_URL = '/api/v1/auth'; // Using relative path, assumes proxy or same domain
+  private readonly API_URL = '/api/v1/auth';
 
   login(credentials: LoginRequestDto): Observable<ApiResponse<LoginResponseDto>> {
     return this.http.post<ApiResponse<LoginResponseDto>>(`${this.API_URL}/login`, credentials).pipe(
