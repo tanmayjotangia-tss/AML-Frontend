@@ -1,1 +1,81 @@
-<p>cases works!</p>
+<div class="cases-page">
+  
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Case Management</h1>
+      <p class="page-subtitle">Track and investigate suspicious activity cases</p>
+    </div>
+    <div class="header-stat">
+      <span class="total-count">{{ totalElements }}</span>
+      <span class="total-label">Total Cases</span>
+    </div>
+  </div>
+
+  <!-- Loading/Error -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loader"></div>
+    <p>Loading cases...</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-banner">
+    ⚠ {{ error }}
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading && cases.length > 0" class="table-card">
+    <table class="case-table">
+      <thead>
+        <tr>
+          <th>Case Reference</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Customer</th>
+          <th>Risk Score</th>
+          <th>Assigned To</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of cases" class="case-row" (click)="openCase(c.caseReference)">
+          <td><span class="case-ref-chip">{{ c.caseReference }}</span></td>
+          <td>
+            <span [class]="'priority-badge ' + getPriorityClass(c.priority)">{{ c.priority }}</span>
+          </td>
+          <td>
+            <span [class]="'status-badge ' + getStatusClass(c.status)">{{ c.status.replace('_', ' ') }}</span>
+          </td>
+          <td>
+            <div class="customer-info">
+              <span class="name">{{ (c.customerProfile?.customerName || c.customer?.customerName) || '—' }}</span>
+              <span class="acc">{{ c.customerProfile?.accountNumber || c.customer?.accountNumber }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="risk-val font-bold text-indigo-600">{{ c.aggregatedRiskScore }}</div>
+          </td>
+          <td class="text-slate-600">{{ c.assignedTo || 'Unassigned' }}</td>
+          <td class="text-slate-400 text-xs">{{ formatDate(c.openedAt) }}</td>
+          <td>
+            <button class="btn-investigate" (click)="openCase(c.caseReference); $event.stopPropagation()">Investigate</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && cases.length === 0 && !error" class="empty-state">
+    <div class="empty-icon">📂</div>
+    <h3>No cases found</h3>
+    <p>Bundled alerts will appear here as cases</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="pagination">
+    <button class="page-btn" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">←</button>
+    <button *ngFor="let p of pages" [class]="'page-btn ' + (p === currentPage ? 'active' : '')" (click)="changePage(p)">{{ p + 1 }}</button>
+    <button class="page-btn" [disabled]="currentPage >= totalPages - 1" (click)="changePage(currentPage + 1)">→</button>
+  </div>
+
+</div>

@@ -2,6 +2,8 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlertService } from '../../../core/services/alert.service';
+import { CaseService } from '../../../core/services/case.service';
+import { TokenService } from '../../../core/auth/token';
 import {
   AlertResponseDto,
   AlertDetailResponseDto,
@@ -19,6 +21,8 @@ import {
 })
 export class Alerts implements OnInit {
   private alertService = inject(AlertService);
+  private caseService = inject(CaseService);
+  private tokenService = inject(TokenService);
   private cdr = inject(ChangeDetectorRef);
 
   // ─── List State ────────────────────────────────────────────────────────────
@@ -40,6 +44,15 @@ export class Alerts implements OnInit {
 
   // ─── Severity Counts (stats bar) ───────────────────────────────────────────
   severityCounts: Partial<SeverityCounts> = {};
+  
+  // ─── Selection ─────────────────────────────────────────────────────────────
+  selectedAlertIds = new Set<string>();
+  
+  // ─── Create Case Modal ─────────────────────────────────────────────────────
+  showCreateCaseModal = false;
+  casePriority = 'MEDIUM';
+  caseAssignee = ''; // employee ID
+  isCreatingCase = false;
 
   // ─── Detail Modal ──────────────────────────────────────────────────────────
   selectedAlert: AlertDetailResponseDto | null = null;
@@ -53,6 +66,7 @@ export class Alerts implements OnInit {
   isClosing = false;
 
   ngOnInit(): void {
+    this.caseAssignee = this.tokenService.getUsername() || '';
     this.loadAlerts();
     this.loadSeverityCounts();
   }
@@ -201,6 +215,7 @@ export class Alerts implements OnInit {
       ESCALATED:             { cls: 'status-escalated',  label: 'Escalated'      },
       CLOSED_CONFIRMED:      { cls: 'status-confirmed',  label: 'Confirmed'      },
       CLOSED_FALSE_POSITIVE: { cls: 'status-false-pos',  label: 'False Positive' },
+      BUNDLED_TO_CASE:       { cls: 'status-review',     label: 'Bundled'        },
     };
     return map[status] || { cls: 'status-new', label: status };
   }
@@ -225,5 +240,93 @@ export class Alerts implements OnInit {
 
   getSeverityCount(severity: AlertSeverity): number {
     return (this.severityCounts as Record<string, number>)[severity] || 0;
+  }
+
+  // ─── Bundling ──────────────────────────────────────────────────────────────
+  
+  toggleSelection(alertId: string): void {
+    if (this.selectedAlertIds.has(alertId)) {
+      this.selectedAlertIds.delete(alertId);
+    } else {
+      const alertItem = this.alerts.find(a => a.id === alertId);
+      if (!alertItem) return;
+
+      const currentCustomerId = this.getSelectedCustomerId();
+      if (currentCustomerId && alertItem.customer?.id !== currentCustomerId) {
+        window.alert('Invalid operation: You cannot bundle alerts from different customers into a single case.');
+        return;
+      }
+      this.selectedAlertIds.add(alertId);
+    }
+    this.cdr.detectChanges();
+  }
+
+  toggleAll(event: any): void {
+    if (event.target.checked) {
+      if (this.alerts.length === 0) return;
+      
+      const currentCustomerId = this.getSelectedCustomerId() || this.alerts[0].customer?.id;
+      
+      // Select only alerts matching the first customer found
+      const mismatch = this.alerts.some(a => a.customer?.id !== currentCustomerId);
+      if (mismatch && this.selectedAlertIds.size === 0) {
+        // If nothing was selected and page has mixed customers, just select the first customer's alerts
+        this.alerts.filter(a => a.customer?.id === currentCustomerId).forEach(a => this.selectedAlertIds.add(a.id));
+        window.alert('Some alerts were skipped as they belong to different customers.');
+      } else if (mismatch && this.selectedAlertIds.size > 0) {
+        // If something was already selected, only select matching ones from the page
+        this.alerts.filter(a => a.customer?.id === currentCustomerId).forEach(a => this.selectedAlertIds.add(a.id));
+        window.alert('Only alerts for the currently selected customer were added.');
+      } else {
+        // All match
+        this.alerts.forEach(a => this.selectedAlertIds.add(a.id));
+      }
+    } else {
+      this.selectedAlertIds.clear();
+    }
+    this.cdr.detectChanges();
+  }
+
+  getSelectedCustomerId(): string | null {
+    if (this.selectedAlertIds.size === 0) return null;
+    const firstId = Array.from(this.selectedAlertIds)[0];
+    const alert = this.alerts.find(a => a.id === firstId);
+    return alert?.customer?.id || null;
+  }
+
+  openCreateCase(): void {
+    if (this.selectedAlertIds.size === 0) return;
+    this.showCreateCaseModal = true;
+  }
+
+  submitCreateCase(): void {
+    if (!this.caseAssignee || this.isCreatingCase) return;
+    
+    this.isCreatingCase = true;
+    const selectedRefs = this.alerts
+      .filter(a => this.selectedAlertIds.has(a.id))
+      .map(a => a.alertReference);
+
+    const dto = {
+      alertReferences: selectedRefs,
+      assigneeUserCode: this.caseAssignee,
+      priority: this.casePriority
+    };
+
+    this.caseService.createCase(dto).subscribe({
+      next: () => {
+        window.alert('Case created successfully');
+        this.isCreatingCase = false;
+        this.showCreateCaseModal = false;
+        this.selectedAlertIds.clear();
+        this.loadAlerts();
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        window.alert(err?.error?.message || 'Failed to create case');
+        this.isCreatingCase = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

@@ -10,6 +10,7 @@ export interface LoginResponseDto {
   tokenType: string;
   username: string;
   role: string;
+  userId: string;
   tenantId?: string;
   isFirstLogin: boolean;
 }

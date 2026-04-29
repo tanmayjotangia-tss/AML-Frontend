@@ -1,0 +1,452 @@
+<div class="case-detail-page" *ngIf="caseData; else loadingOrError">
+  
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header class="case-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">← Back to Cases</button>
+      <div class="title-wrap">
+        <h1 class="case-ref">{{ caseData.caseReference }}</h1>
+        <span [class]="'priority-badge ' + getPriorityClass(caseData.priority)">{{ caseData.priority }}</span>
+        <span [class]="'status-badge ' + getStatusClass(caseData.status)">{{ caseData.status.replace('_', ' ') }}</span>
+      </div>
+      <p class="case-subtitle">
+        Customer: <strong>{{ (caseData.customerProfile?.customerName || caseData.customer?.customerName) || '—' }}</strong> 
+        <span class="sep">•</span> 
+        ID: <span class="mono">{{ caseData.customerProfile?.accountNumber || caseData.customer?.accountNumber || '—' }}</span>
+      </p>
+    </div>
+
+    <div class="header-actions" *ngIf="!isBankAdmin || canReassign">
+      <button class="btn-action btn-reassign" 
+              *ngIf="canReassign"
+              (click)="showReassignModal = true">Reassign</button>
+              
+      <button class="btn-action btn-escalate" 
+              *ngIf="!isBankAdmin"
+              [disabled]="!canPerformAction" 
+              [title]="getActionTooltip()" 
+              (click)="showEscalateModal = true">Escalate</button>
+              
+      <button class="btn-action btn-close-case" 
+              *ngIf="!isBankAdmin"
+              [disabled]="!canPerformAction || !hasNotes" 
+              [title]="!canPerformAction ? getActionTooltip() : (!hasNotes ? 'Add at least one investigation note before closing' : '')" 
+              (click)="showCloseModal = true">Close Case</button>
+    </div>
+  </header>
+
+  <div class="case-layout">
+    
+    <!-- ── Left Column: Investigation Workspace ──────────────────── -->
+    <main class="case-main">
+      
+      <!-- Summary Row -->
+      <section class="summary-cards">
+        <div class="summary-card">
+          <label>Risk Score</label>
+          <div class="val text-indigo-600">{{ caseData.aggregatedRiskScore }}</div>
+        </div>
+        <div class="summary-card">
+          <label>Assigned To</label>
+          <div class="val text-slate-700">{{ getAssignedToName() }}</div>
+        </div>
+        <div class="summary-card">
+          <label>Opened At</label>
+          <div class="val text-slate-500 text-sm">{{ formatDate(caseData.openedAt) }}</div>
+        </div>
+        <div class="summary-card">
+          <label>Typology</label>
+          <div class="val text-slate-700 text-sm truncate" [title]="caseData.typologyTriggered">{{ caseData.typologyTriggered || '—' }}</div>
+        </div>
+      </section>
+
+      <!-- Tabs -->
+      <nav class="case-tabs">
+        <div class="flex-1 flex gap-4">
+          <button [class.active]="activeTab === 'ALERTS'" (click)="activeTab = 'ALERTS'">Linked Alerts ({{ linkedAlerts.length }})</button>
+          <button [class.active]="activeTab === 'AUDIT'" (click)="activeTab = 'AUDIT'">Audit Trail</button>
+        </div>
+        <button *ngIf="activeTab === 'AUDIT'" class="btn-export-pdf" [disabled]="isExporting" (click)="exportAuditTrail()">
+          {{ isExporting ? 'Exporting...' : 'Export PDF' }}
+        </button>
+      </nav>
+      
+      <!-- Tab Content: Alerts -->
+      <div class="tab-content" *ngIf="activeTab === 'ALERTS'">
+        <div class="alert-list">
+          <div *ngFor="let alert of linkedAlerts" class="alert-item clickable" (mousedown)="openAlertDetail(alert.id, $event)">
+            <div class="alert-item-header">
+              <span class="mono font-bold">{{ alert.alertReference }}</span>
+              <span class="text-xs uppercase font-bold text-slate-400">{{ alert.severity }}</span>
+            </div>
+            <div class="alert-item-body">
+              <p class="typology">{{ alert.typologyTriggered }}</p>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-xs text-slate-400">{{ formatDate(alert.sysCreatedAt) }}</span>
+                <span class="text-indigo-600 font-bold">Score: {{ alert.riskScore }}</span>
+              </div>
+            </div>
+            <div class="alert-click-hint">Click to view transactions & evidence →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Audit Trail -->
+      <div class="tab-content" *ngIf="activeTab === 'AUDIT'">
+        <div class="audit-timeline">
+          <div *ngFor="let audit of auditTrail" class="audit-entry">
+            <div class="audit-dot"></div>
+            <div class="audit-body">
+              <div class="audit-header">
+                <span class="audit-event">{{ audit.eventType.replace('_', ' ') }}</span>
+                <span class="audit-time">{{ formatDate(audit.sysCreatedAt) }}</span>
+              </div>
+              <p class="audit-actor">Actor: {{ audit.actorId }}</p>
+              <div class="audit-meta" *ngIf="audit.eventMetadata">
+                <div class="meta-tags">
+                  <ng-container *ngFor="let entry of parseMetadata(audit.eventMetadata) | keyvalue">
+                    <span class="meta-tag">
+                      <strong>{{ entry.key }}:</strong> {{ entry.value }}
+                    </span>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── Right Column: Sidebar (Notes & Customer) ──────────────── -->
+    <aside class="case-sidebar">
+      
+      <!-- Customer Info -->
+      <section class="sidebar-section">
+        <h3 class="sidebar-title">Customer Profile</h3>
+        <div class="customer-preview" *ngIf="caseData.customer">
+          <div class="info-row">
+            <span class="label">Rating</span>
+            <span class="val">{{ caseData.customer.riskRating }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Account</span>
+            <span class="val mono">{{ caseData.customerProfile?.accountNumber || caseData.customer.accountNumber }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Investigation Notes -->
+      <section class="sidebar-section notes-section">
+        <h3 class="sidebar-title">Investigation Notes</h3>
+        <div class="note-requirement" *ngIf="!hasNotes">
+          <span class="req-icon">⚠</span> At least one note is required before closing or filing an STR.
+        </div>
+        <div class="note-requirement note-ok" *ngIf="hasNotes">
+          <span class="req-icon">✓</span> Note requirement met — case can be closed.
+        </div>
+        
+        <div class="add-note" *ngIf="!isBankAdmin">
+          <select [(ngModel)]="newNoteType" class="note-type-select">
+            <option value="OBSERVATION">Observation</option>
+            <option value="EVIDENCE">Evidence</option>
+            <option value="RATIONALE">Rationale</option>
+          </select>
+          <textarea [(ngModel)]="newNoteContent" 
+                    placeholder="Type investigation note..." 
+                    rows="3" 
+                    [disabled]="!canPerformAction"
+                    [title]="getActionTooltip()"></textarea>
+          <button class="btn-add-note" 
+                  [disabled]="!newNoteContent || isAddingNote || !canPerformAction" 
+                  [title]="getActionTooltip()"
+                  (click)="addNote()">
+            {{ isAddingNote ? 'Adding...' : 'Add Note' }}
+          </button>
+        </div>
+      </section>
+
+    </aside>
+
+  </div>
+
+</div>
+
+<!-- ── Loading/Error States ─────────────────────────────────── -->
+<ng-template #loadingOrError>
+  <div class="state-container" *ngIf="loading">
+    <div class="loader"></div>
+    <p>Loading Case Details...</p>
+  </div>
+  <div class="state-container error" *ngIf="error && !loading">
+    <div class="error-icon">⚠</div>
+    <h2>Error Loading Case</h2>
+    <p>{{ error }}</p>
+    <button class="btn-back" (click)="goBack()">Return to List</button>
+  </div>
+</ng-template>
+
+<!-- ── Modals (Reassign, Escalate, Close) ────────────────────── -->
+<!-- Reassign -->
+<div class="modal-overlay" *ngIf="showReassignModal" (click)="showReassignModal = false">
+  <div class="modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Reassign Case</h2>
+      <button class="close-btn" (click)="showReassignModal = false">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>New Assignee</label>
+      <select [(ngModel)]="reassignAssignee" class="modal-select">
+        <option value="">Select Compliance Officer...</option>
+        <option *ngFor="let user of availableComplianceOfficers" [value]="user.employeeId">
+          {{ user.fullName }} ({{ user.employeeId }})
+        </option>
+      </select>
+      <label class="mt-4">Reason</label>
+      <textarea [(ngModel)]="reassignReason" rows="3"></textarea>
+      <button class="btn-submit mt-6" [disabled]="isReassigning" (click)="submitReassign()">Confirm Reassignment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Escalate -->
+<div class="modal-overlay" *ngIf="showEscalateModal" (click)="showEscalateModal = false">
+  <div class="modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Escalate Case</h2>
+      <button class="close-btn" (click)="showEscalateModal = false">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Escalate To</label>
+      <select [(ngModel)]="escalateTo" class="modal-select">
+        <option value="">Select User...</option>
+        <option *ngFor="let user of availableEscalationUsers" [value]="user.id">
+          {{ user.fullName }} ({{ user.role.replace('_', ' ') }})
+        </option>
+      </select>
+      <label class="mt-4">Escalation Reason</label>
+      <textarea [(ngModel)]="escalateReason" rows="3"></textarea>
+      <button class="btn-submit mt-6" [disabled]="isEscalating" (click)="submitEscalate()">Escalate Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Close / File STR -->
+<div class="modal-overlay" *ngIf="showCloseModal" (click)="closeStrModal()">
+  <div class="modal-sm modal-wide" (click)="$event.stopPropagation()">
+
+    <!-- ── Success State ─────────────────────── -->
+    <div *ngIf="strFilingSuccess && strFilingResult" class="str-success">
+      <div class="success-icon">✓</div>
+      <h2 class="success-title">STR Filed Successfully</h2>
+      <p class="success-sub">The case has been closed and the STR report has been generated.</p>
+
+      <div class="filing-summary">
+        <div class="filing-row">
+          <span class="filing-label">Filing Reference</span>
+          <span class="filing-val mono">{{ strFilingResult.filingReference }}</span>
+        </div>
+        <div class="filing-row">
+          <span class="filing-label">Regulatory Body</span>
+          <span class="filing-val">{{ strFilingResult.regulatoryBody }}</span>
+        </div>
+        <div class="filing-row">
+          <span class="filing-label">Rule Type</span>
+          <span class="filing-val">{{ strFilingResult.ruleType }}</span>
+        </div>
+        <div class="filing-row">
+          <span class="filing-label">Typology</span>
+          <span class="filing-val">{{ strFilingResult.typologyTriggered }}</span>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button class="btn-download-pdf" (click)="downloadStrPdf()">
+          📄 Download STR Report (PDF)
+        </button>
+        <button class="btn-done" (click)="closeStrModal()">Done</button>
+      </div>
+    </div>
+
+    <!-- ── Form State ────────────────────────── -->
+    <div *ngIf="!strFilingSuccess">
+      <div class="modal-header">
+        <h2>Close Case</h2>
+        <button class="close-btn" (click)="closeStrModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="close-types">
+          <button [class.active]="closeType === 'FALSE_POSITIVE'" (click)="closeType = 'FALSE_POSITIVE'">False Positive</button>
+          <button [class.active]="closeType === 'STR'" (click)="closeType = 'STR'">File STR</button>
+        </div>
+
+        <div *ngIf="closeType === 'FALSE_POSITIVE'">
+          <label class="mt-4">Rationale</label>
+          <textarea [(ngModel)]="closeRationale" rows="3" placeholder="Provide investigation summary..."></textarea>
+        </div>
+
+        <div *ngIf="closeType === 'STR'" class="str-form">
+          <label class="mt-4">Regulatory Body</label>
+          <select [(ngModel)]="strRegulatoryBody" class="str-select">
+            <option value="FIU_IND">FIU-IND (Financial Intelligence Unit - India)</option>
+            <option value="FINCEN">FinCEN (US)</option>
+            <option value="FCA_UK">FCA (UK)</option>
+            <option value="AUSTRAC">AUSTRAC (Australia)</option>
+            <option value="OTHER">Other</option>
+          </select>
+
+          <label class="mt-4">Suspicion Narrative</label>
+          <textarea [(ngModel)]="strSuspicionNarrative" rows="5"
+            placeholder="Describe the suspicious activity, patterns observed, and rationale for filing..."></textarea>
+          <p class="str-hint">This narrative will be included in the official STR/SAR report submitted to the regulatory body.</p>
+
+          <div *ngIf="strFilingError" class="str-error">
+            ⚠ {{ strFilingError }}
+          </div>
+        </div>
+
+        <button class="btn-submit mt-6"
+          [disabled]="isClosing || (closeType === 'FALSE_POSITIVE' && !closeRationale) || (closeType === 'STR' && !strSuspicionNarrative)"
+          (click)="submitClose()">
+          <span *ngIf="!isClosing">{{ closeType === 'STR' ? 'File STR & Close Case' : 'Confirm Closure' }}</span>
+          <span *ngIf="isClosing">Processing...</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ ALERT DETAIL MODAL ════════════════ -->
+<div *ngIf="selectedAlertDetail || loadingAlertDetail" class="modal-overlay alert-detail-overlay" (mousedown)="closeAlertDetail()">
+  <div class="modal-lg" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+
+    <!-- Loading -->
+    <div *ngIf="loadingAlertDetail" class="modal-loading">
+      <div class="loader"></div>
+      <p>Loading alert details...</p>
+    </div>
+
+    <div *ngIf="selectedAlertDetail && !loadingAlertDetail">
+      <!-- Header -->
+      <div class="modal-header">
+        <div>
+          <div class="alert-modal-badges">
+            <span class="mono font-bold alert-ref-badge">{{ selectedAlertDetail.alert.alertReference }}</span>
+            <span class="severity-chip" [attr.data-severity]="selectedAlertDetail.alert.severity">{{ selectedAlertDetail.alert.severity }}</span>
+            <span class="status-chip">{{ selectedAlertDetail.alert.status }}</span>
+          </div>
+          <p class="alert-modal-typology">{{ selectedAlertDetail.alert.typologyTriggered }}</p>
+        </div>
+        <button class="close-btn" (click)="closeAlertDetail()">✕</button>
+      </div>
+
+      <div class="alert-modal-body">
+        <!-- Stats Row -->
+        <div class="alert-stats-row">
+          <div class="alert-stat">
+            <div class="alert-stat-val">{{ selectedAlertDetail.alert.riskScore }}</div>
+            <div class="alert-stat-label">Risk Score</div>
+          </div>
+          <div class="alert-stat">
+            <div class="alert-stat-val">{{ selectedAlertDetail.alert.ruleType || '—' }}</div>
+            <div class="alert-stat-label">Rule Type</div>
+          </div>
+          <div class="alert-stat">
+            <div class="alert-stat-val">{{ selectedAlertDetail.evidences.length }}</div>
+            <div class="alert-stat-label">Evidence Items</div>
+          </div>
+          <div class="alert-stat">
+            <div class="alert-stat-val">{{ selectedAlertDetail.linkedTransactions.length }}</div>
+            <div class="alert-stat-label">Transactions</div>
+          </div>
+        </div>
+
+        <!-- Customer Card -->
+        <div class="alert-section" *ngIf="selectedAlertDetail.alert.customer || selectedAlertDetail.alert.customerProfile">
+          <h3 class="alert-section-title">Customer Profile</h3>
+          <div class="alert-detail-grid">
+            <div class="alert-detail-item">
+              <span class="adl">Name</span>
+              <span class="adv">{{ (selectedAlertDetail.alert.customerProfile?.customerName || selectedAlertDetail.alert.customer?.customerName) || '—' }}</span>
+            </div>
+            <div class="alert-detail-item">
+              <span class="adl">Account</span>
+              <span class="adv mono">{{ selectedAlertDetail.alert.customerProfile?.accountNumber || selectedAlertDetail.alert.customer?.accountNumber || '—' }}</span>
+            </div>
+            <div class="alert-detail-item">
+              <span class="adl">Risk Rating</span>
+              <span class="adv">{{ selectedAlertDetail.alert.customer?.riskRating || '—' }}</span>
+            </div>
+            <div class="alert-detail-item">
+              <span class="adl">KYC Status</span>
+              <span class="adv">{{ selectedAlertDetail.alert.customer?.kycStatus || '—' }}</span>
+            </div>
+            <div class="alert-detail-item">
+              <span class="adl">PEP</span>
+              <span class="adv">{{ selectedAlertDetail.alert.customer?.isPep ? '⚠ Yes' : 'No' }}</span>
+            </div>
+            <div class="alert-detail-item">
+              <span class="adl">Dormant</span>
+              <span class="adv">{{ selectedAlertDetail.alert.customer?.isDormant ? '⚠ Yes' : 'No' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidence -->
+        <div class="alert-section" *ngIf="selectedAlertDetail.evidences.length > 0">
+          <h3 class="alert-section-title">Rule Evidence</h3>
+          <div class="evidence-cards">
+            <div *ngFor="let ev of selectedAlertDetail.evidences" class="evidence-card">
+              <div class="ev-top">
+                <span class="ev-fn">{{ ev.aggregationFunction }}</span>
+                <span class="ev-name">{{ ev.attributeName }}</span>
+              </div>
+              <div class="ev-bottom">
+                <div class="ev-pair">
+                  <span class="ev-label">Threshold</span>
+                  <span class="ev-val">{{ ev.operator }} {{ ev.thresholdApplied }}</span>
+                </div>
+                <div class="ev-pair">
+                  <span class="ev-label">Actual</span>
+                  <span class="ev-val ev-actual">{{ ev.actualEvaluatedValue }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linked Transactions -->
+        <div class="alert-section" *ngIf="selectedAlertDetail.linkedTransactions.length > 0">
+          <h3 class="alert-section-title">Linked Transactions ({{ selectedAlertDetail.linkedTransactions.length }})</h3>
+          <div class="txn-table-wrap">
+            <table class="txn-table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Amount</th>
+                  <th>Type</th>
+                  <th>Timestamp</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let txn of selectedAlertDetail.linkedTransactions">
+                  <td class="mono">{{ txn.transactionRef || '—' }}</td>
+                  <td class="font-bold">{{ formatAmount(txn.amount, txn.currency) }}</td>
+                  <td>{{ txn.transactionType || '—' }}</td>
+                  <td>{{ formatDate(txn.transactionTimestamp) }}</td>
+                  <td>
+                    <span [class]="txn.role === 'TRIGGER' ? 'role-trigger' : 'role-contrib'">{{ txn.role }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

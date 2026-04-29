@@ -28,13 +28,14 @@ export const routes: Routes = [
     data: { roles: ['BANK_ADMIN', 'COMPLIANCE_OFFICER'] },
     children: [
       { path: 'dashboard', loadComponent: () => import('./features/tenant/dashboard/dashboard').then(m => m.Dashboard) },
-      { path: 'alerts', loadComponent: () => import('./features/tenant/alerts/alerts').then(m => m.Alerts) },
+      { path: 'alerts', loadComponent: () => import('./features/tenant/alerts/alerts').then(m => m.Alerts), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
       { path: 'cases', loadComponent: () => import('./features/tenant/cases/cases').then(m => m.Cases) },
+      { path: 'cases/:caseRef', loadComponent: () => import('./features/tenant/cases/case-detail/case-detail').then(m => m.CaseDetail) },
       { path: 'investigation', loadComponent: () => import('./features/tenant/investigation/investigation').then(m => m.Investigation) },
       { path: 'str', loadComponent: () => import('./features/tenant/str/str').then(m => m.Str) },
-      { path: 'rule-engine', loadComponent: () => import('./features/tenant/rule-engine/rule-engine').then(m => m.RuleEngine) },
-      { path: 'users', loadComponent: () => import('./features/tenant/users/users').then(m => m.Users) },
-      { path: 'upload', loadComponent: () => import('./features/tenant/upload/upload').then(m => m.Upload) },
+      { path: 'rule-engine', loadComponent: () => import('./features/tenant/rule-engine/rule-engine').then(m => m.RuleEngine), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
+      { path: 'users', loadComponent: () => import('./features/tenant/users/users').then(m => m.Users), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
+      { path: 'upload', loadComponent: () => import('./features/tenant/upload/upload').then(m => m.Upload), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

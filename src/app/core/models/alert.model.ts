@@ -6,6 +6,7 @@ export type AlertStatus =
   | 'NEW'
   | 'UNDER_REVIEW'
   | 'ESCALATED'
+  | 'BUNDLED_TO_CASE'
   | 'CLOSED_CONFIRMED'
   | 'CLOSED_FALSE_POSITIVE';
 
@@ -37,6 +38,7 @@ export interface AlertResponseDto {
   globalRuleId?: string;
   tenantRuleId?: string;
   customer?: AlertCustomerSummary;
+  customerProfile?: AlertCustomerSummary;
   sysCreatedAt?: string;
   sysUpdatedAt?: string;
 }

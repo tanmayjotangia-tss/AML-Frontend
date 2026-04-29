@@ -21,7 +21,12 @@ export class AuthService {
       tap(response => {
         if (response.data) {
           this.tokenService.saveTokens(response.data.accessToken, response.data.refreshToken);
-          this.tokenService.saveUserInfo(response.data.role, response.data.tenantId);
+          this.tokenService.saveUserInfo(
+            response.data.role, 
+            response.data.userId, 
+            response.data.username,
+            response.data.tenantId
+          );
         }
       })
     );

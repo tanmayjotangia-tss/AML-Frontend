@@ -1,1 +1,61 @@
-<p>investigation works!</p>
+<div class="investigation-dashboard">
+  <header class="dashboard-header">
+    <div class="title-section">
+      <h1 class="page-title">Investigation Workspace</h1>
+      <p class="page-subtitle">Manage cases currently under active investigation</p>
+    </div>
+    <div class="stat-badge">
+      <span class="count">{{ activeCases.length }}</span>
+      <span class="label">Active Cases</span>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="state-view">
+    <div class="loader"></div>
+    <p>Retrieving active cases...</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-view">
+    <span class="icon">⚠</span>
+    <p>{{ error }}</p>
+    <button (click)="loadActiveInvestigations()">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && activeCases.length > 0" class="case-grid">
+    <div *ngFor="let c of activeCases" class="case-card" (click)="goToCase(c.caseReference)">
+      <div class="card-header">
+        <span class="case-ref">{{ c.caseReference }}</span>
+        <span [class]="'priority-dot ' + getPriorityClass(c.priority)"></span>
+      </div>
+      
+      <div class="card-body">
+        <h3 class="customer-name">{{ (c.customerProfile?.customerName || c.customer?.customerName) || 'Unknown Customer' }}</h3>
+        <p class="typology">{{ c.typologyTriggered || 'Standard Investigation' }}</p>
+        
+        <div class="risk-info">
+          <label>Aggregated Risk</label>
+          <div class="risk-bar">
+            <div class="risk-fill" [style.width.%]="c.aggregatedRiskScore" [style.background]="c.aggregatedRiskScore > 75 ? '#ef4444' : c.aggregatedRiskScore > 40 ? '#f59e0b' : '#10b981'"></div>
+          </div>
+          <span class="risk-value">{{ c.aggregatedRiskScore }}</span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <span [class]="'status-pill ' + getStatusClass(c.status)">{{ c.status.replace('_', ' ') }}</span>
+        <span class="time">{{ formatDate(c.openedAt) }}</span>
+      </div>
+      
+      <button class="btn-continue" (click)="goToCase(c.caseReference); $event.stopPropagation()">
+        Continue Investigation 
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && activeCases.length === 0 && !error" class="empty-view">
+    <div class="empty-icon">✓</div>
+    <h2>All caught up!</h2>
+    <p>No active investigations found. New cases will appear here when they are opened or escalated.</p>
+  </div>
+</div>

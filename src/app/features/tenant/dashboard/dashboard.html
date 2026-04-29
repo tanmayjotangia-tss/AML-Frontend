@@ -1,1 +1,173 @@
-<p>dashboard works!</p>
+<div class="dashboard-container" *ngIf="!loading; else loader">
+  
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Compliance Dashboard</h1>
+      <p>Overview of active investigations and system alerts</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="loadDashboard()">Refresh Data</button>
+    </div>
+  </header>
+
+  <!-- Stats Grid -->
+  <section class="stats-grid" *ngIf="dashboardData">
+    <div class="stat-card">
+      <div class="stat-icon open-cases">📁</div>
+      <div class="stat-info">
+        <span class="stat-label">Open Cases</span>
+        <h2 class="stat-value">{{ dashboardData.stats.totalOpenCases }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon critical-alerts">⚠</div>
+      <div class="stat-info">
+        <span class="stat-label">Critical Alerts</span>
+        <h2 class="stat-value">{{ dashboardData.stats.criticalAlerts }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="userRole === Role.BANK_ADMIN">
+      <div class="stat-icon users-icon">👤</div>
+      <div class="stat-info">
+        <span class="stat-label">Total Users</span>
+        <h2 class="stat-value">{{ dashboardData.stats.totalUsers }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon strs-filed">✓</div>
+      <div class="stat-info">
+        <span class="stat-label">STRs Filed</span>
+        <h2 class="stat-value">{{ dashboardData.stats.strsFiled }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="userRole === Role.BANK_ADMIN">
+      <div class="stat-icon health-icon">🛡</div>
+      <div class="stat-info">
+        <span class="stat-label">System Health</span>
+        <h2 class="stat-value health-ok">{{ dashboardData.stats.systemHealth }}</h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- Admin Quick Actions -->
+  <section class="admin-actions" *ngIf="userRole === Role.BANK_ADMIN">
+    <button class="action-card" (click)="router.navigate(['/tenant/users'])">
+      <span class="action-icon">👥</span>
+      <span class="action-label">Manage Users</span>
+    </button>
+    <button class="action-card" (click)="router.navigate(['/tenant/rule-engine'])">
+      <span class="action-icon">⚙</span>
+      <span class="action-label">Rule Engine</span>
+    </button>
+    <button class="action-card" (click)="router.navigate(['/tenant/upload'])">
+      <span class="action-icon">📥</span>
+      <span class="action-label">Data Ingestion</span>
+    </button>
+    <button class="action-card" (click)="router.navigate(['/tenant/str'])">
+      <span class="action-icon">📄</span>
+      <span class="action-label">STR Repository</span>
+    </button>
+  </section>
+
+  <!-- Main Content Layout -->
+  <div class="dashboard-layout" *ngIf="dashboardData" [class.admin-layout]="userRole === Role.BANK_ADMIN">
+    
+    <!-- Left Column -->
+    <div class="dashboard-col-left">
+      <!-- Assigned Cases -->
+      <div class="dashboard-section assigned-cases">
+        <div class="section-header">
+          <h3>My Assigned Cases</h3>
+          <button class="btn-text" (click)="router.navigate(['/tenant/cases'])">View All</button>
+        </div>
+        
+        <div class="case-list">
+          <div *ngFor="let case of dashboardData.myAssignedCases" 
+               class="case-item" (click)="viewCase(case.caseReference)">
+            <div class="case-main-info">
+              <span class="case-ref">{{ case.caseReference }}</span>
+              <p class="case-typology">{{ case.typologyTriggered || 'Unknown Typology' }}</p>
+            </div>
+            <div class="case-meta">
+              <span [class]="'priority-tag ' + getPriorityClass(case.priority)">{{ case.priority }}</span>
+              <span class="case-date">{{ formatDate(case.openedAt) }}</span>
+            </div>
+          </div>
+          <div *ngIf="dashboardData.myAssignedCases.length === 0" class="empty-state">
+            No cases currently assigned to you.
+          </div>
+        </div>
+      </div>
+
+      <!-- User Workload (ADMIN ONLY) -->
+      <div class="dashboard-section workload-section mt-8" *ngIf="userRole === Role.BANK_ADMIN">
+        <div class="section-header">
+          <h3>Team Workload Distribution</h3>
+        </div>
+        <div class="workload-list">
+          <div *ngFor="let w of dashboardData.userWorkload" class="workload-item">
+            <div class="w-user">
+              <div class="w-avatar">{{ w.fullName.substring(0, 1).toUpperCase() }}</div>
+              <div class="w-info">
+                <span class="w-name">{{ w.fullName }}</span>
+                <span class="w-id">{{ w.employeeId }}</span>
+              </div>
+            </div>
+            <div class="w-bar-container">
+              <div class="w-bar" [style.width.%]="(w.caseCount / (dashboardData.stats.totalOpenCases || 1)) * 100"></div>
+            </div>
+            <span class="w-count">{{ w.caseCount }} cases</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Recent Alerts (BANK_ADMIN ONLY) -->
+    <div class="dashboard-section recent-alerts" *ngIf="userRole === Role.BANK_ADMIN">
+      <div class="section-header">
+        <h3>Recent System Alerts</h3>
+        <button class="btn-text" (click)="viewAlerts()">Manage Alerts</button>
+      </div>
+
+      <div class="alert-list">
+        <div *ngFor="let alert of dashboardData.recentAlerts.slice(0, 5)" class="alert-item">
+          <div class="alert-severity" [attr.data-severity]="alert.severity"></div>
+          <div class="alert-info">
+            <div class="alert-top">
+              <span class="alert-ref">{{ alert.alertReference }}</span>
+              <span class="alert-score">Score: {{ alert.riskScore }}</span>
+            </div>
+            <p class="alert-desc">{{ alert.typologyTriggered }}</p>
+            <div class="alert-footer">
+              <span class="alert-cust">{{ alert.customer?.customerName || alert.customerProfile?.customerName || 'N/A' }}</span>
+              <span class="alert-time">{{ formatDate(alert.sysCreatedAt) }}</span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="dashboardData.recentAlerts.length === 0" class="empty-state">
+          No alerts detected in the last 24 hours.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<ng-template #loader>
+  <div class="loader-container">
+    <div class="spinner"></div>
+    <p>Loading Intelligence Dashboard...</p>
+  </div>
+</ng-template>
+
+<div class="error-container" *ngIf="error">
+  <div class="error-icon">⚠</div>
+  <h2>Dashboard Unavailable</h2>
+  <p>{{ error }}</p>
+  <button class="btn-refresh" (click)="loadDashboard()">Try Again</button>
+</div>
