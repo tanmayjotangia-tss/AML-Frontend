@@ -315,7 +315,7 @@
         <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Active Overrides</h3>
         <div class="space-y-3">
           <div *ngFor="let t of thresholds" class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
-            <div class="grid grid-cols-3 gap-6 flex-1">
+            <div class="grid grid-cols-2 gap-6 flex-1">
               <div class="flex flex-col">
                 <span class="text-[10px] font-bold text-slate-400 uppercase">Value</span>
                 <span class="text-slate-700 font-bold">{{ t.overrideValue || 'N/A' }}</span>
@@ -323,10 +323,6 @@
               <div class="flex flex-col">
                 <span class="text-[10px] font-bold text-slate-400 uppercase">Lookback</span>
                 <span class="text-slate-700 font-bold">{{ t.overrideLookbackPeriod || 'N/A' }}</span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-[10px] font-bold text-slate-400 uppercase">Function</span>
-                <span class="text-slate-700 font-bold">{{ t.overrideAggregationFunction || 'N/A' }}</span>
               </div>
             </div>
             <button (click)="deleteThreshold(t.id)" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
@@ -348,13 +344,13 @@
         
         <!-- Since we don't have a condition selector yet, we use a placeholder or ID input -->
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Condition ID (Reference)</label>
-          <input type="text" formControlName="globalConditionId" 
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Global Condition Code</label>
+          <input type="text" formControlName="globalConditionCode" 
             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            placeholder="UUID of the global condition">
+            placeholder="e.g. GC-001">
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Threshold Value</label>
             <input type="text" formControlName="overrideValue" 
@@ -366,12 +362,6 @@
             <input type="text" formControlName="overrideLookbackPeriod" 
               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. 48h">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Agg. Function</label>
-            <input type="text" formControlName="overrideAggregationFunction" 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="e.g. SUM">
           </div>
         </div>
 

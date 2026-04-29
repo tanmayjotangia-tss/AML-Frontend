@@ -60,10 +60,9 @@ export class RuleEngine implements OnInit {
 
   constructor() {
     this.thresholdForm = this.fb.group({
-      globalConditionId: ['', Validators.required],
+      globalConditionCode: ['', Validators.required],
       overrideValue: [''],
-      overrideLookbackPeriod: [''],
-      overrideAggregationFunction: ['']
+      overrideLookbackPeriod: ['']
     });
   }
 
@@ -238,7 +237,7 @@ export class RuleEngine implements OnInit {
 
     this.loading = true;
     const dto = {
-      tenantRuleId: this.selectedRule.id,
+      tenantRuleCode: this.selectedRule.ruleCode,
       ...this.thresholdForm.value
     };
 

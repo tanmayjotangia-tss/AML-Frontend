@@ -183,15 +183,31 @@ export class Upload implements OnInit {
     const interval = setInterval(() => {
       this.ingestionService.getBatchStatus(batchId).subscribe({
         next: (res) => {
-          const status = res.data?.batchStatus;
+          if (!res.data) return;
+          
+          // Update in history list
+          const idx = this.batches.findIndex(b => b.id === batchId);
+          if (idx >= 0) { 
+            this.batches[idx] = res.data; 
+          }
+          
+          // Update the upload result card
+          if (this.uploadSuccess?.id === batchId) { 
+            this.uploadSuccess = res.data; 
+          }
+          
+          this.cdr.detectChanges();
+
+          const status = res.data.batchStatus;
           if (status === 'COMPLETED' || status === 'FAILED' || status === 'PARTIAL') {
             clearInterval(interval);
             this.pollingIntervals.delete(batchId);
-            // Update in history list
-            const idx = this.batches.findIndex(b => b.id === batchId);
-            if (idx >= 0) { this.batches[idx] = res.data; this.cdr.detectChanges(); }
-            if (this.uploadSuccess?.id === batchId) { this.uploadSuccess = res.data; this.cdr.detectChanges(); }
+            console.log(`Polling finished for batch ${batchId}: ${status}`);
           }
+        },
+        error: (err) => {
+          console.error('Polling error:', err);
+          // Optional: clear interval on persistent errors
         }
       });
     }, 3000);

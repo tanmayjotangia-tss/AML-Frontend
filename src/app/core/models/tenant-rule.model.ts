@@ -47,11 +47,10 @@ export interface UpdateTenantRuleRequestDto {
 }
 
 export interface CreateTenantRuleThresholdRequestDto {
-  tenantRuleId: string;
-  globalConditionId: string;
+  tenantRuleCode: string;
+  globalConditionCode: string;
   overrideValue?: string;
   overrideLookbackPeriod?: string;
-  overrideAggregationFunction?: string;
 }
 
 export interface UpdateTenantRuleThresholdRequestDto {

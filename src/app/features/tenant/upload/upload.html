@@ -180,9 +180,14 @@
               </span>
             </div>
           </div>
-          <div *ngIf="uploadSuccess.batchStatus === 'PENDING' || uploadSuccess.batchStatus === 'RUNNING'" class="processing-notice">
-            <span class="spinner-sm"></span>
-            <span>Status updates automatically every 3s</span>
+          <div *ngIf="uploadSuccess.batchStatus === 'PENDING' || uploadSuccess.batchStatus === 'RUNNING'" class="processing-area">
+            <div class="progress-container">
+              <div [class]="'progress-bar ' + (uploadSuccess.batchStatus === 'RUNNING' ? 'progress-animated' : 'progress-pending')"></div>
+            </div>
+            <div class="processing-notice">
+              <span class="spinner-sm"></span>
+              <span>{{ uploadSuccess.batchStatus === 'RUNNING' ? 'Processing records...' : 'Waiting in queue...' }}</span>
+            </div>
           </div>
         </div>
 

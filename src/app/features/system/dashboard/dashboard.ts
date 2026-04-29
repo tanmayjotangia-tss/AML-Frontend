@@ -72,13 +72,6 @@ export class Dashboard implements OnInit {
     this.router.navigate(['/system/reports']);
   }
 
-  navigateToUsers(): void {
-    this.router.navigate(['/system/users']);
-  }
-
-  navigateToSettings(): void {
-    this.router.navigate(['/system/users']); // Assuming settings are in users/profile for now
-  }
 
   viewTenantDetail(tenant: TenantResponseDto): void {
     this.viewingTenant = tenant;
