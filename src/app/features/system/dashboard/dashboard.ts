@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { PlatformDashboardService } from '../../../core/services/platform-dashboard.service';
 import { PlatformDashboardStats } from '../../../core/models/platform-dashboard.model';
 import { TenantResponseDto } from '../../../core/models/tenant.model';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { TenantDetailComponent } from '../tenants/components/tenant-detail/tenant-detail.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, TenantDetailComponent],
+  imports: [CommonModule, TenantDetailComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
 })

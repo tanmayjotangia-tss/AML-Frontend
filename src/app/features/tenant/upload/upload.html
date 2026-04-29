@@ -1,1 +1,420 @@
-<p>upload works!</p>
+<div class="upload-page">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Batch Data Ingestion</h1>
+      <p class="page-subtitle">Upload and manage customer profile or transaction data via CSV batch files</p>
+    </div>
+    <div class="header-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="badge-icon">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Batch Upload
+    </div>
+  </div>
+
+  <!-- ── Tabs ───────────────────────────────────────────────── -->
+  <div class="tabs">
+    <button [class]="'tab-btn ' + (activeTab === 'UPLOAD' ? 'tab-active' : '')" (click)="setTab('UPLOAD')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Upload File
+    </button>
+    <button [class]="'tab-btn ' + (activeTab === 'HISTORY' ? 'tab-active' : '')" (click)="setTab('HISTORY')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Batch History
+    </button>
+  </div>
+
+  <!-- ════════════════════════ UPLOAD TAB ════════════════════════ -->
+  <div *ngIf="activeTab === 'UPLOAD'" class="tab-content">
+
+    <div class="upload-grid">
+
+      <!-- ── Left: File Type + Dropzone ─────────────────────────── -->
+      <div class="upload-card">
+        <h2 class="section-title">1. Select File Type</h2>
+
+        <div class="file-type-selector">
+          <label [class]="'type-option ' + (selectedFileType === 'CUSTOMER_PROFILE' ? 'type-selected' : '')" (click)="selectedFileType = 'CUSTOMER_PROFILE'">
+            <input type="radio" name="fileType" value="CUSTOMER_PROFILE" [(ngModel)]="selectedFileType" class="sr-only"/>
+            <div class="type-icon-wrap type-customer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="type-icon">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="type-label">Customer Profile</div>
+              <div class="type-hint">KYC data, risk ratings, account info</div>
+            </div>
+          </label>
+
+          <label [class]="'type-option ' + (selectedFileType === 'TRANSACTION' ? 'type-selected' : '')" (click)="selectedFileType = 'TRANSACTION'">
+            <input type="radio" name="fileType" value="TRANSACTION" [(ngModel)]="selectedFileType" class="sr-only"/>
+            <div class="type-icon-wrap type-transaction">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="type-icon">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+            </div>
+            <div>
+              <div class="type-label">Transaction Data</div>
+              <div class="type-hint">Originator, beneficiary, amounts</div>
+            </div>
+          </label>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 2rem;">2. Upload CSV File</h2>
+
+        <!-- Dropzone -->
+        <div
+          [class]="'dropzone ' + (isDragOver ? 'dropzone-over' : '') + (selectedFile ? ' dropzone-has-file' : '')"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()"
+          (drop)="onDrop($event)"
+          (click)="!selectedFile && triggerFileInput()">
+
+          <input #fileInput type="file" accept=".csv" class="sr-only" (change)="onFileSelected($event)"/>
+
+          <div *ngIf="!selectedFile" class="dropzone-empty">
+            <div class="drop-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="drop-icon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+              </svg>
+            </div>
+            <p class="drop-title">Drag & drop your CSV here</p>
+            <p class="drop-sub">or <span class="drop-link">browse files</span></p>
+            <p class="drop-hint">Only .csv files accepted</p>
+          </div>
+
+          <div *ngIf="selectedFile" class="dropzone-file" (click)="$event.stopPropagation()">
+            <div class="file-preview">
+              <div class="file-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="file-icon">
+                  <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                  <polyline points="13 2 13 9 20 9"/>
+                </svg>
+              </div>
+              <div class="file-info">
+                <div class="file-name">{{ selectedFile.name }}</div>
+                <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+              </div>
+              <button class="file-clear" (click)="clearFile()" title="Remove file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Button -->
+        <button class="upload-btn" [disabled]="!selectedFile || isUploading" (click)="uploadFile()">
+          <span *ngIf="!isUploading" class="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload Batch
+          </span>
+          <span *ngIf="isUploading" class="flex items-center gap-2">
+            <span class="spinner"></span> Uploading...
+          </span>
+        </button>
+
+        <!-- Error -->
+        <div *ngIf="uploadError" class="alert alert-error">
+          <svg viewBox="0 0 20 20" fill="currentColor" class="alert-icon">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          {{ uploadError }}
+        </div>
+      </div>
+
+      <!-- ── Right: Result + Guidelines ─────────────────────────── -->
+      <div class="side-panel">
+
+        <!-- Upload Success Card -->
+        <div *ngIf="uploadSuccess" class="result-card">
+          <div class="result-header">
+            <div class="result-icon-wrap">
+              <svg viewBox="0 0 20 20" fill="currentColor" class="result-icon">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div>
+              <div class="result-title">Batch Accepted</div>
+              <div class="result-subtitle">Processing in background</div>
+            </div>
+          </div>
+          <div class="result-fields">
+            <div class="result-row">
+              <span class="result-label">Batch Ref</span>
+              <span class="result-value mono">{{ uploadSuccess.batchReference }}</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">File</span>
+              <span class="result-value">{{ uploadSuccess.fileName }}</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Size</span>
+              <span class="result-value">{{ formatFileSize(uploadSuccess.fileSizeBytes) }}</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Status</span>
+              <span [class]="'status-badge ' + getStatusClass(uploadSuccess.batchStatus)">
+                {{ getStatusIcon(uploadSuccess.batchStatus) }} {{ uploadSuccess.batchStatus }}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="uploadSuccess.batchStatus === 'PENDING' || uploadSuccess.batchStatus === 'RUNNING'" class="processing-notice">
+            <span class="spinner-sm"></span>
+            <span>Status updates automatically every 3s</span>
+          </div>
+        </div>
+
+        <!-- CSV Format Guidelines -->
+        <div class="guidelines-card">
+          <h3 class="guidelines-title">
+            <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-blue-500">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 000 16zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            CSV Format Requirements
+          </h3>
+
+          <div *ngIf="selectedFileType === 'CUSTOMER_PROFILE'" class="guidelines-content">
+            <p class="guide-sub">Required columns for <strong>Customer Profile</strong>:</p>
+            <div class="col-list">
+              <span class="col-tag required">account_number</span>
+              <span class="col-tag required">customer_name</span>
+              <span class="col-tag required">customer_type</span>
+              <span class="col-tag required">account_opened_on</span>
+              <span class="col-tag required">risk_rating</span>
+              <span class="col-tag">nationality</span>
+              <span class="col-tag">country_of_residence</span>
+              <span class="col-tag">id_type</span>
+              <span class="col-tag">id_number</span>
+              <span class="col-tag">monthly_income</span>
+              <span class="col-tag">net_worth</span>
+              <span class="col-tag">is_pep</span>
+              <span class="col-tag">kyc_status</span>
+            </div>
+            <p class="guide-enum">customer_type: INDIVIDUAL, CORPORATE, JOINT, TRUST</p>
+            <p class="guide-enum">kyc_status: PENDING, VERIFIED, REJECTED, EXPIRED</p>
+          </div>
+
+          <div *ngIf="selectedFileType === 'TRANSACTION'" class="guidelines-content">
+            <p class="guide-sub">Required columns for <strong>Transaction</strong>:</p>
+            <div class="col-list">
+              <span class="col-tag required">transaction_ref</span>
+              <span class="col-tag required">amount</span>
+              <span class="col-tag required">currency_code</span>
+              <span class="col-tag required">transaction_type</span>
+              <span class="col-tag required">channel</span>
+              <span class="col-tag required">transaction_timestamp</span>
+              <span class="col-tag">originator_account_no</span>
+              <span class="col-tag">originator_name</span>
+              <span class="col-tag">beneficiary_account_no</span>
+              <span class="col-tag">beneficiary_name</span>
+              <span class="col-tag">reference_note</span>
+            </div>
+            <p class="guide-enum">transaction_type: CREDIT, DEBIT, TRANSFER, PAYMENT, WITHDRAWAL, DEPOSIT</p>
+            <p class="guide-enum">channel: BRANCH, ATM, ONLINE, MOBILE, POS, SWIFT</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ HISTORY TAB ════════════════════════ -->
+  <div *ngIf="activeTab === 'HISTORY'" class="tab-content">
+
+    <!-- Filters -->
+    <div class="history-toolbar">
+      <div class="filter-group">
+        <label class="filter-label">Filter by Type</label>
+        <select [(ngModel)]="historyFileType" (change)="applyFilter()" class="filter-select">
+          <option value="">All Types</option>
+          <option value="CUSTOMER_PROFILE">Customer Profile</option>
+          <option value="TRANSACTION">Transaction</option>
+        </select>
+      </div>
+      <button class="refresh-btn" (click)="loadHistory()" [disabled]="isLoadingHistory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4" [class.animate-spin]="isLoadingHistory">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoadingHistory" class="loading-state">
+      <div class="loader-ring"></div>
+      <p>Loading batch history...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="historyError && !isLoadingHistory" class="alert alert-error">{{ historyError }}</div>
+
+    <!-- Table -->
+    <div *ngIf="!isLoadingHistory && batches.length > 0" class="table-wrap">
+      <table class="batch-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Batch Reference</th>
+            <th>File Name</th>
+            <th>Size</th>
+            <th>Records</th>
+            <th>Status</th>
+            <th>Uploaded</th>
+            <th>Processed</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let batch of batches" class="table-row" (click)="openDetail(batch)">
+            <td>
+              <span class="type-chip">
+                {{ getFileTypeIcon(batch.batchReference) }}
+                {{ getFileTypeLabel(batch.batchReference) }}
+              </span>
+            </td>
+            <td><span class="mono text-sm">{{ batch.batchReference }}</span></td>
+            <td class="file-name-cell" [title]="batch.fileName">{{ batch.fileName }}</td>
+            <td>{{ formatFileSize(batch.fileSizeBytes) }}</td>
+            <td>{{ batch.totalRecords ?? '—' }}</td>
+            <td>
+              <span [class]="'status-badge ' + getStatusClass(batch.batchStatus)">
+                {{ getStatusIcon(batch.batchStatus) }} {{ batch.batchStatus }}
+              </span>
+            </td>
+            <td>{{ formatDate(batch.sysCreatedAt) }}</td>
+            <td>{{ formatDate(batch.processedAt) }}</td>
+            <td>
+              <button class="detail-btn" (click)="openDetail(batch); $event.stopPropagation()">
+                View
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!isLoadingHistory && batches.length === 0" class="empty-state">
+      <div class="empty-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+        </svg>
+      </div>
+      <p class="empty-title">No batches found</p>
+      <p class="empty-sub">Upload your first batch file to get started</p>
+      <button class="upload-btn" style="max-width: 200px; margin: 0 auto;" (click)="setTab('UPLOAD')">Upload Now</button>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination">
+      <button class="page-btn" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">← Prev</button>
+      <button
+        *ngFor="let p of pages"
+        [class]="'page-btn ' + (p === currentPage ? 'page-active' : '')"
+        (click)="changePage(p)">
+        {{ p + 1 }}
+      </button>
+      <button class="page-btn" [disabled]="currentPage >= totalPages - 1" (click)="changePage(currentPage + 1)">Next →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════ DETAIL MODAL ════════════════════════════ -->
+<div *ngIf="selectedBatch" class="modal-overlay" (click)="closeDetail()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">Batch Detail</h2>
+        <p class="modal-sub">{{ selectedBatch.batchReference }}</p>
+      </div>
+      <button class="modal-close" (click)="closeDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div *ngIf="isLoadingDetail" class="modal-loading">
+      <div class="loader-ring"></div>
+    </div>
+
+    <div *ngIf="!isLoadingDetail" class="modal-body">
+      <!-- Status Banner -->
+      <div [class]="'modal-status-banner ' + getStatusClass(selectedBatch.batchStatus)">
+        <span class="text-lg">{{ getStatusIcon(selectedBatch.batchStatus) }}</span>
+        <div>
+          <div class="font-bold">{{ selectedBatch.batchStatus }}</div>
+          <div class="text-xs opacity-75">{{ getFileTypeLabel(selectedBatch.batchReference) }}</div>
+        </div>
+        <div class="ml-auto text-right text-xs opacity-75">
+          <div>Records: {{ selectedBatch.totalRecords ?? '—' }}</div>
+          <div>{{ formatFileSize(selectedBatch.fileSizeBytes) }}</div>
+        </div>
+      </div>
+
+      <!-- Fields Grid -->
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">File Name</div>
+          <div class="detail-value">{{ selectedBatch.fileName }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Batch Reference</div>
+          <div class="detail-value mono">{{ selectedBatch.batchReference }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Uploaded At</div>
+          <div class="detail-value">{{ formatDate(selectedBatch.sysCreatedAt) }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Processed At</div>
+          <div class="detail-value">{{ formatDate(selectedBatch.processedAt) }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">SHA-256 Hash</div>
+          <div class="detail-value mono text-xs break-all">{{ selectedBatch.fileHashSha256 }}</div>
+        </div>
+        <div class="detail-item" *ngIf="selectedBatch.springBatchJobId">
+          <div class="detail-label">Spring Batch Job ID</div>
+          <div class="detail-value mono">{{ selectedBatch.springBatchJobId }}</div>
+        </div>
+      </div>
+
+      <!-- Failure Details -->
+      <div *ngIf="selectedBatch.failureDetails" class="failure-section">
+        <div class="failure-title">
+          <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-red-500">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          Failure Details
+        </div>
+        <pre class="failure-json">{{ parseFailureDetails(selectedBatch.failureDetails) }}</pre>
+      </div>
+    </div>
+  </div>
+</div>

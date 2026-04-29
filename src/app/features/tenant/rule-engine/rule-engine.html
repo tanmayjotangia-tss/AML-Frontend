@@ -1,1 +1,385 @@
-<p>rule-engine works!</p>
+<div class="p-6 max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Scenario Orchestration</h1>
+    <p class="text-slate-500 mt-2 text-lg">Configure and activate monitoring scenarios for your organization.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 p-1 bg-slate-100 rounded-xl mb-8 w-fit">
+    <button (click)="setTab('MY_SCENARIOS')" 
+      [class]="'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ' + 
+      (activeTab === 'MY_SCENARIOS' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+      My Active Scenarios
+    </button>
+    <button (click)="setTab('ACTIVATION_LIBRARY')" 
+      [class]="'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ' + 
+      (activeTab === 'ACTIVATION_LIBRARY' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900')">
+      Global Library
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && !selectedScenario" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <!-- MY SCENARIOS TAB -->
+  <div *ngIf="activeTab === 'MY_SCENARIOS' && !selectedScenario">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let item of myScenarios" 
+        [class]="'rounded-2xl border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group ' + 
+          (item.scenario.status === 'PAUSED' ? 'bg-amber-50/50 border-amber-200' : 'bg-white border-slate-200')">
+        <div class="p-6">
+          <!-- Status Bar -->
+          <div class="flex justify-between items-start mb-4">
+            <span [class]="'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ' + 
+              (item.scenario.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')">
+              {{ item.scenario.status }}
+            </span>
+            <!-- Pause button: only visible on hover for ACTIVE, BANK_ADMIN only -->
+            <button *ngIf="item.scenario.status === 'ACTIVE' && isBankAdmin" (click)="pauseScenario(item.scenario.id)" 
+              class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Pause Scenario">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Scenario {{ item.scenario.globalScenarioId.substring(0,8) }}</h3>
+          <p class="text-slate-500 text-sm mb-6">Total Rules: {{ item.rules.length }}</p>
+
+          <!-- PAUSED state: show resume banner (BANK_ADMIN only) -->
+          <div *ngIf="item.scenario.status === 'PAUSED'" class="mb-4 px-4 py-3 bg-amber-100 rounded-xl border border-amber-200 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-amber-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-xs font-bold">Scenario is paused</span>
+            </div>
+            <button *ngIf="isBankAdmin" (click)="resumeScenario(item.scenario.id)"
+              class="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+              </svg>
+              Resume
+            </button>
+          </div>
+
+          <button (click)="viewScenarioDetails(item)" 
+            class="w-full py-3 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-semibold rounded-xl transition-colors duration-200">
+            Configure Rules
+          </button>
+        </div>
+      </div>
+      
+      <div *ngIf="myScenarios.length === 0 && !loading" class="col-span-full text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+        <p class="text-slate-400 text-lg">No scenarios yet.</p>
+        <button (click)="setTab('ACTIVATION_LIBRARY')" class="mt-4 text-blue-600 font-bold hover:underline">
+          Browse Global Library →
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ACTIVATION LIBRARY TAB -->
+  <div *ngIf="activeTab === 'ACTIVATION_LIBRARY'">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let scenario of availableGlobalScenarios" 
+        class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+              </svg>
+            </div>
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">{{ scenario.category || 'Standard' }}</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">{{ scenario.scenarioName }}</h3>
+          <p class="text-slate-500 text-sm mb-6">{{ scenario.description || 'No description available for this global template.' }}</p>
+        </div>
+        <button *ngIf="isBankAdmin" (click)="activateScenario(scenario.id)" 
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all duration-200 flex items-center justify-center gap-2">
+          Activate Template
+        </button>
+        <div *ngIf="!isBankAdmin" class="w-full py-3 text-center text-slate-400 text-sm bg-slate-50 rounded-xl border border-slate-100">
+          View Only
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIO DETAILS VIEW -->
+  <div *ngIf="selectedScenario" class="animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div class="flex items-center gap-4 mb-8">
+      <button (click)="closeDetails()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">Scenario Configuration</h2>
+        <p class="text-slate-500">Managing {{ selectedScenario.rules.length }} rules within this scenario.</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 border-b border-slate-100">
+          <tr>
+            <th class="px-8 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">Rule Name & Code</th>
+            <th class="px-8 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider">Active Status</th>
+            <th class="px-8 py-5 text-sm font-bold text-slate-500 uppercase tracking-wider text-right">Overrides</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let rule of selectedScenario.rules" class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-8 py-6">
+              <div class="flex flex-col">
+                <span class="font-bold text-slate-900 text-lg">{{ rule.ruleName }}</span>
+                <span class="text-xs font-mono text-slate-400 mt-1">{{ rule.ruleCode }}</span>
+              </div>
+            </td>
+            <td class="px-8 py-6">
+              <button (click)="toggleRule(rule)" 
+                [class]="'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ' + (rule.active ? 'bg-blue-600' : 'bg-slate-200')">
+                <span [class]="'inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ' + (rule.active ? 'translate-x-6' : 'translate-x-1')"></span>
+              </button>
+            </td>
+            <td class="px-8 py-6 text-right">
+              <button (click)="openThresholdModal(rule)" 
+                class="px-4 py-2 text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-100">
+                Manage Thresholds
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Run Scenario Panel ─────────────────────────────────────────────── -->
+    <div *ngIf="isBankAdmin && selectedScenario.scenario.status === 'ACTIVE'" class="mt-6">
+      <div *ngIf="!showExecutionPanel" class="flex justify-end">
+        <button (click)="showExecutionPanel = true"
+          class="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+          </svg>
+          Run Scenario
+        </button>
+      </div>
+
+      <div *ngIf="showExecutionPanel" class="exec-panel">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="text-xl font-extrabold text-white">Scenario Execution</h3>
+            <p class="text-slate-400 text-sm mt-1">Run all active rules against transaction data</p>
+          </div>
+          <button (click)="showExecutionPanel = false; clearExecution()" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 transition-colors">✕</button>
+        </div>
+
+        <!-- Mode selector -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <button [class]="'exec-mode-btn ' + (executionMode === 'LIVE' ? 'exec-mode-active' : 'exec-mode-inactive')" (click)="executionMode = 'LIVE'">
+            <span class="text-xl">⚡</span>
+            <div>
+              <div class="font-bold text-sm">Live Mode</div>
+              <div class="text-xs opacity-60">Last 30 days</div>
+            </div>
+          </button>
+          <button [class]="'exec-mode-btn ' + (executionMode === 'FORENSIC' ? 'exec-mode-active' : 'exec-mode-inactive')" (click)="executionMode = 'FORENSIC'">
+            <span class="text-xl">🔍</span>
+            <div>
+              <div class="font-bold text-sm">Forensic Mode</div>
+              <div class="text-xs opacity-60">Custom window</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Date pickers for FORENSIC -->
+        <div *ngIf="executionMode === 'FORENSIC'" class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Start</label>
+            <input type="datetime-local" [(ngModel)]="execStartDate" class="exec-date-input"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">End</label>
+            <input type="datetime-local" [(ngModel)]="execEndDate" class="exec-date-input"/>
+          </div>
+        </div>
+
+        <button (click)="runScenario()"
+          [disabled]="isExecuting || (executionMode === 'FORENSIC' && (!execStartDate || !execEndDate))"
+          class="exec-run-btn">
+          <span *ngIf="!isExecuting">▶ Execute {{ executionMode }} Scan</span>
+          <span *ngIf="isExecuting" class="flex items-center gap-2">
+            <span class="exec-spinner"></span> Running analysis...
+          </span>
+        </button>
+
+        <div *ngIf="executionError" class="mt-4 p-4 bg-red-500/20 border border-red-400/30 rounded-xl text-red-300 text-sm">
+          ❌ {{ executionError }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Execution Results ───────────────────────────────────────────────── -->
+    <div *ngIf="executionResult" class="mt-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-extrabold text-slate-900">Execution Results</h3>
+        <button (click)="clearExecution()" class="text-sm text-slate-400 hover:text-slate-600 transition-colors">Clear</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 text-center">
+          <div class="text-3xl font-black" [class]="executionResult.totalBreachesFound > 0 ? 'text-red-600' : 'text-green-600'">{{ executionResult.totalBreachesFound }}</div>
+          <div class="text-xs text-slate-500 font-bold uppercase mt-1">Breaches</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 text-center">
+          <div class="text-base font-black text-indigo-600">{{ executionResult.executionMode }}</div>
+          <div class="text-xs text-slate-500 font-bold uppercase mt-1">Mode</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 text-center">
+          <div class="text-base font-black text-slate-700">{{ executionResult.processingTimeMs }}ms</div>
+          <div class="text-xs text-slate-500 font-bold uppercase mt-1">Duration</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 text-center">
+          <span [class]="'px-3 py-1 rounded-full text-xs font-bold ' + (executionResult.status === 'SUCCESS' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')">{{ executionResult.status }}</span>
+          <div class="text-xs text-slate-500 font-bold uppercase mt-2">Status</div>
+        </div>
+      </div>
+
+      <!-- No breaches -->
+      <div *ngIf="executionResult.totalBreachesFound === 0" class="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
+        <div class="text-4xl mb-2">✅</div>
+        <p class="font-bold text-green-700">No breaches detected</p>
+        <p class="text-sm text-green-600 mt-1">All customers within acceptable thresholds for this scenario</p>
+      </div>
+
+      <!-- Breach list -->
+      <div *ngIf="executionResult.totalBreachesFound > 0" class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div class="px-6 py-4 bg-red-50 border-b border-red-100 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <span class="font-bold text-red-700">{{ executionResult.totalBreachesFound }} breach{{ executionResult.totalBreachesFound !== 1 ? 'es' : '' }} — alerts auto-generated</span>
+        </div>
+        <div *ngFor="let breach of executionResult.breaches" class="px-6 py-5 border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-3 mb-2 flex-wrap">
+                <span class="font-extrabold text-slate-900">{{ breach.customer?.customerName || 'Unknown' }}</span>
+                <span class="font-mono text-xs text-slate-400">{{ breach.customer?.accountNumber }}</span>
+                <span [class]="'px-2 py-0.5 rounded-full text-xs font-bold ' + getSeverityClass(breach.customer?.riskRating)">{{ breach.customer?.riskRating || '—' }}</span>
+              </div>
+              <div class="flex gap-4 text-xs text-slate-500 flex-wrap">
+                <span *ngIf="breach.ruleType"><span class="font-bold text-slate-700">Type:</span> {{ breach.ruleType }}</span>
+                <span *ngIf="breach.ruleLabel"><span class="font-bold text-slate-700">Rule:</span> {{ breach.ruleLabel }}</span>
+                <span *ngIf="breach.transactions?.length"><span class="font-bold text-slate-700">Txns:</span> {{ breach.transactions!.length }}</span>
+                <span *ngIf="breach.customer?.riskScore !== undefined"><span class="font-bold text-slate-700">Score:</span> {{ breach.customer?.riskScore }}</span>
+              </div>
+            </div>
+            <span class="text-red-400 text-2xl">⚠</span>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="executionResult.timeWindowStart" class="text-xs text-slate-400 text-right mt-2">
+        Window: {{ executionResult.timeWindowStart | date:'medium' }} → {{ executionResult.timeWindowEnd | date:'medium' }}
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- THRESHOLD MODAL -->
+<div *ngIf="showThresholdModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+      <div>
+        <h2 class="text-xl font-extrabold text-slate-900">Rule Threshold Overrides</h2>
+        <p class="text-slate-500 text-sm mt-1">{{ selectedRule?.ruleName }}</p>
+      </div>
+      <button (click)="closeThresholdModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-white rounded-full shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-8">
+      <!-- Existing Overrides -->
+      <div class="mb-8" *ngIf="thresholds.length > 0">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Active Overrides</h3>
+        <div class="space-y-3">
+          <div *ngFor="let t of thresholds" class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
+            <div class="grid grid-cols-3 gap-6 flex-1">
+              <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Value</span>
+                <span class="text-slate-700 font-bold">{{ t.overrideValue || 'N/A' }}</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Lookback</span>
+                <span class="text-slate-700 font-bold">{{ t.overrideLookbackPeriod || 'N/A' }}</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Function</span>
+                <span class="text-slate-700 font-bold">{{ t.overrideAggregationFunction || 'N/A' }}</span>
+              </div>
+            </div>
+            <button (click)="deleteThreshold(t.id)" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="thresholds.length === 0" class="mb-8 p-6 bg-blue-50/50 rounded-2xl border border-dashed border-blue-200 text-center">
+        <p class="text-blue-600 text-sm font-medium">No overrides defined. This rule is using global default parameters.</p>
+      </div>
+
+      <!-- Add New Override -->
+      <form [formGroup]="thresholdForm" (ngSubmit)="saveThreshold()" class="space-y-6">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Create New Override</h3>
+        
+        <!-- Since we don't have a condition selector yet, we use a placeholder or ID input -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Condition ID (Reference)</label>
+          <input type="text" formControlName="globalConditionId" 
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            placeholder="UUID of the global condition">
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Threshold Value</label>
+            <input type="text" formControlName="overrideValue" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="e.g. 15000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Lookback Period</label>
+            <input type="text" formControlName="overrideLookbackPeriod" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="e.g. 48h">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Agg. Function</label>
+            <input type="text" formControlName="overrideAggregationFunction" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="e.g. SUM">
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="thresholdForm.invalid || loading" 
+          class="w-full py-4 bg-slate-900 hover:bg-black text-white font-bold rounded-xl transition-all duration-200 disabled:opacity-50 shadow-xl shadow-slate-200">
+          {{ loading ? 'Saving...' : 'Apply Override' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
