@@ -43,51 +43,94 @@
       {{ errorGlobalRules }}
     </div>
 
-    <div class="data-card">
-      <div class="loading-overlay" *ngIf="isLoadingGlobalRules">
-        <div class="spinner"></div>
-        <p>Loading global rules...</p>
-      </div>
+    <div class="rules-repo-container">
+      <div class="table-section">
+        <div class="data-card">
+          <div class="loading-overlay" *ngIf="isLoadingGlobalRules">
+            <div class="spinner"></div>
+            <p>Loading global rules...</p>
+          </div>
 
-      <div class="empty-state" *ngIf="!isLoadingGlobalRules && globalRules.length === 0 && !errorGlobalRules">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+          <div class="empty-state" *ngIf="!isLoadingGlobalRules && globalRules.length === 0 && !errorGlobalRules">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+            </div>
+            <h3 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #0f172a;">No Global Rules Found</h3>
+            <p style="margin: 0; font-size: 0.875rem;">There are currently no rules seeded in the system.</p>
+          </div>
+
+          <div class="table-container" *ngIf="!isLoadingGlobalRules && globalRules.length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Rule Name</th>
+                  <th>Type</th>
+                  <th>Severity</th>
+                  <th style="text-align: center">Base Risk Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rule of globalRules" 
+                    [class.active-row]="selectedRuleId === rule.id"
+                    (click)="selectRule(rule)">
+                  <td>
+                    <span style="font-weight: 500;">{{ rule.ruleName }}</span>
+                  </td>
+                  <td>
+                    <span class="pill-badge">{{ rule.ruleType }}</span>
+                  </td>
+                  <td>
+                    <span style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 500;">
+                      <div style="width: 0.375rem; height: 0.375rem; border-radius: 50%;" 
+                           [ngClass]="{'bg-red-500': rule.severity === 'HIGH' || rule.severity === 'CRITICAL', 'bg-amber-500': rule.severity === 'MEDIUM', 'bg-emerald-500': rule.severity === 'LOW'}"></div>
+                      {{ rule.severity }}
+                    </span>
+                  </td>
+                  <td style="text-align: center">
+                    <span style="font-weight: 500;">{{ rule.baseRiskScore }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <h3 style="margin: 0 0 0.5rem 0; font-weight: 500; color: #0f172a;">No Global Rules Found</h3>
-        <p style="margin: 0; font-size: 0.875rem;">There are currently no rules seeded in the system.</p>
       </div>
 
-      <div class="table-container" *ngIf="!isLoadingGlobalRules && globalRules.length > 0">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Rule Name</th>
-              <th>Type</th>
-              <th>Severity</th>
-              <th style="text-align: center">Base Risk Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let rule of globalRules">
-              <td>
-                <span style="font-weight: 500; color: #0f172a;">{{ rule.ruleName }}</span>
-              </td>
-              <td>
-                <span class="pill-badge">{{ rule.ruleType }}</span>
-              </td>
-              <td>
-                <span style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; font-weight: 500;">
-                  <div style="width: 0.375rem; height: 0.375rem; border-radius: 50%;" 
-                       [ngClass]="{'bg-red-500': rule.severity === 'HIGH' || rule.severity === 'CRITICAL', 'bg-amber-500': rule.severity === 'MEDIUM', 'bg-emerald-500': rule.severity === 'LOW'}"></div>
-                  {{ rule.severity }}
-                </span>
-              </td>
-              <td style="text-align: center">
-                <span style="font-weight: 500; color: #334155;">{{ rule.baseRiskScore }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Right Panel: Conditions -->
+      <div class="conditions-section" *ngIf="selectedRuleId">
+        <div class="conditions-panel">
+          <div class="panel-header">
+            <h3>Rule Logic Details</h3>
+            <button class="close-panel-btn" (click)="selectedRuleId = null">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+
+          <div class="panel-content">
+            <div *ngIf="isLoadingConditions" style="padding: 2rem; text-align: center;">
+              <div class="spinner" style="margin: 0 auto 0.5rem auto; width: 1.5rem; height: 1.5rem;"></div>
+              <p style="font-size: 0.875rem; color: #64748b;">Fetching conditions...</p>
+            </div>
+
+            <div *ngIf="!isLoadingConditions">
+              <div *ngIf="selectedRuleConditions.length === 0" style="padding: 2rem; text-align: center; color: #94a3b8;">
+                <p style="font-size: 0.875rem; margin: 0;">No specific conditions found for this rule.</p>
+              </div>
+
+              <div *ngFor="let cond of selectedRuleConditions" class="condition-card">
+                <span class="cond-attr">{{ cond.attributeName }}</span>
+                <div class="cond-logic">
+                  <span class="cond-value">{{ cond.thresholdValue }}</span>
+                  <span class="cond-type">{{ cond.valueDataType }}</span>
+                </div>
+                <div class="cond-meta">
+                  <span>Code: <strong>{{ cond.conditionCode }}</strong></span>
+                  <span>Lookback: <strong>{{ cond.lookbackPeriod }}</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
