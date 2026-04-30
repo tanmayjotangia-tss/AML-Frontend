@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TenantScenarioService } from '../../../core/services/tenant-scenario.service';
 import { TenantRuleService } from '../../../core/services/tenant-rule.service';
+import { GlobalRuleService } from '../../../core/services/global-rule.service';
 import { TokenService } from '../../../core/auth/token';
 import { 
   TenantScenarioWithRulesDto, 
@@ -12,9 +13,10 @@ import {
   UpdateTenantRuleRequestDto,
   GlobalScenarioResponseDto,
   ScenarioExecutionSummary,
-  BatchScenarioExecutionSummary // <-- Added this import
+  BatchScenarioExecutionSummary
 } from '../../../core/models/tenant-rule.model';
-import { finalize } from 'rxjs';
+import { GlobalRuleConditionResponseDto } from '../../../core/models/rule-engine.model';
+import { finalize, forkJoin } from 'rxjs';
 
 type Tab = 'MY_SCENARIOS' | 'ACTIVATION_LIBRARY';
 
@@ -28,6 +30,7 @@ type Tab = 'MY_SCENARIOS' | 'ACTIVATION_LIBRARY';
 export class RuleEngine implements OnInit {
   private tenantScenarioService = inject(TenantScenarioService);
   private tenantRuleService = inject(TenantRuleService);
+  private globalRuleService = inject(GlobalRuleService);
   private tokenService = inject(TokenService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
@@ -45,6 +48,10 @@ export class RuleEngine implements OnInit {
   selectedScenario?: TenantScenarioWithRulesDto;
   selectedRule?: TenantRuleResponseDto;
   thresholds: TenantRuleThresholdResponseDto[] = [];
+  globalConditions: GlobalRuleConditionResponseDto[] = [];
+  
+  // Track local changes before saving
+  pendingOverrides: Record<string, { value: string, lookback: string }> = {};
   
   // Modals
   showThresholdModal = false;
@@ -245,49 +252,110 @@ export class RuleEngine implements OnInit {
   openThresholdModal(rule: TenantRuleResponseDto): void {
     this.selectedRule = rule;
     this.loading = true;
-    this.tenantRuleService.getThresholdsForRule(rule.id)
-      .pipe(finalize(() => { this.loading = false; this.cdr.detectChanges(); }))
-      .subscribe({
-        next: (res) => {
-          this.thresholds = res.data;
-          this.showThresholdModal = true;
-        },
-        error: (err) => console.error('Error loading thresholds:', err)
-      });
+    this.thresholds = [];
+    this.globalConditions = [];
+
+    if (!rule.id || !rule.globalRuleId) {
+      console.error('Incomplete rule data:', rule);
+      alert('Error: Rule IDs are missing. Cannot fetch conditions.');
+      this.loading = false;
+      return;
+    }
+
+    forkJoin({
+      thresholds: this.tenantRuleService.getThresholdsForRule(rule.id),
+      globalConditions: this.globalRuleService.getConditionsByRuleId(rule.globalRuleId)
+    }).pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (res) => {
+        this.thresholds = res.thresholds.data || [];
+        
+        // Handle both direct array and paginated response
+        const conditionsData = res.globalConditions.data;
+        if (Array.isArray(conditionsData)) {
+          this.globalConditions = conditionsData;
+        } else if (conditionsData && (conditionsData as any).content) {
+          this.globalConditions = (conditionsData as any).content;
+        } else {
+          this.globalConditions = [];
+        }
+        
+        // Initialize pending overrides from existing ones
+        this.pendingOverrides = {};
+        this.globalConditions.forEach(cond => {
+          const existing = this.getThresholdForCondition(cond.id);
+          this.pendingOverrides[cond.id] = {
+            value: existing?.overrideValue ?? '',
+            lookback: existing?.overrideLookbackPeriod ?? ''
+          };
+        });
+
+        this.showThresholdModal = true;
+      },
+      error: (err) => {
+        console.error('Error loading threshold metadata:', err);
+        let msg = 'Failed to load rule condition metadata.';
+        if (err.status === 403) msg += ' (Access Denied: Check permissions)';
+        if (err.status === 404) msg += ' (Global rule or thresholds not found)';
+        alert(msg + ' Please try again or contact support.');
+      }
+    });
   }
 
   closeThresholdModal(): void {
     this.showThresholdModal = false;
     this.selectedRule = undefined;
     this.thresholds = [];
+    this.globalConditions = [];
     this.thresholdForm.reset();
   }
 
-  saveThreshold(): void {
-    if (this.thresholdForm.invalid || !this.selectedRule) return;
+  getThresholdForCondition(conditionId: string): TenantRuleThresholdResponseDto | undefined {
+    return this.thresholds.find(t => t.globalConditionId === conditionId);
+  }
+
+  saveAllOverrides(): void {
+    if (!this.selectedRule) return;
+
+    const overridesToSave = this.globalConditions
+      .map(cond => {
+        const pending = this.pendingOverrides[cond.id];
+        if (pending && (pending.value || pending.lookback)) {
+          return {
+            tenantRuleCode: this.selectedRule!.ruleCode,
+            globalConditionCode: cond.conditionCode,
+            globalConditionId: cond.id, // Pass UUID to avoid backend lookup errors
+            overrideValue: pending.value || null,
+            overrideLookbackPeriod: pending.lookback || null
+          };
+        }
+        return null;
+      })
+      .filter(o => o !== null);
 
     this.loading = true;
-    const dto = {
-      tenantRuleCode: this.selectedRule.ruleCode,
-      ...this.thresholdForm.value
-    };
-
-    this.tenantRuleService.createThresholdOverride(dto)
-      .pipe(finalize(() => this.loading = false))
+    this.tenantRuleService.bulkUpdateThresholds(this.selectedRule.id, overridesToSave as any)
+      .pipe(finalize(() => { 
+        this.loading = false; 
+        this.cdr.detectChanges(); 
+      }))
       .subscribe({
-        next: () => {
-          this.openThresholdModal(this.selectedRule!); // Refresh list
-          this.thresholdForm.reset();
+        next: (res) => {
+          alert('Threshold overrides saved successfully!');
+          this.closeThresholdModal();
+          // Optional: Refresh scenarios to reflect changes if needed
+          // this.loadMyScenarios();
         },
-        error: (err) => console.error('Error saving threshold:', err)
+        error: (err) => {
+          console.error('Error saving thresholds:', err);
+          const errorMsg = err?.error?.message || 'Failed to save overrides. Please check backend logs.';
+          alert(errorMsg);
+        }
       });
   }
 
-  deleteThreshold(id: string): void {
-    if (confirm('Delete this threshold override? It will revert to global default.')) {
-      this.tenantRuleService.deleteThresholdOverride(id).subscribe(() => {
-        this.thresholds = this.thresholds.filter(t => t.id !== id);
-      });
-    }
-  }
 }

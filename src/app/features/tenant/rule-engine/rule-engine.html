@@ -425,64 +425,91 @@
       </button>
     </div>
 
-    <div class="p-8">
-      <div class="mb-8" *ngIf="thresholds.length > 0">
-        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Active Overrides</h3>
-        <div class="space-y-3">
-          <div *ngFor="let t of thresholds" class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
-            <div class="grid grid-cols-2 gap-6 flex-1">
-              <div class="flex flex-col">
-                <span class="text-[10px] font-bold text-slate-400 uppercase">Value</span>
-                <span class="text-slate-700 font-bold">{{ t.overrideValue || 'N/A' }}</span>
+    <div class="flex-1 overflow-y-auto p-8">
+      <div *ngIf="loading" class="flex flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+        <p class="text-slate-500 font-medium">Synchronizing with global library...</p>
+      </div>
+
+      <div *ngIf="!loading">
+        <div class="mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-100 flex gap-4 items-start">
+          <div class="text-2xl mt-1">ℹ️</div>
+          <div>
+            <h4 class="font-bold text-blue-900 text-sm">How overrides work</h4>
+            <p class="text-blue-700 text-xs mt-1 leading-relaxed">
+              Global conditions are defined by the platform. You can provide a custom <strong>Value</strong> or <strong>Lookback Period</strong> to override the default behavior. Leave fields empty to use the system default.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div *ngFor="let cond of globalConditions" class="p-6 rounded-2xl border transition-all duration-200"
+               [class]="pendingOverrides[cond.id]?.value || pendingOverrides[cond.id]?.lookback ? 'bg-indigo-50/30 border-indigo-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'">
+            
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h4 class="font-extrabold text-slate-900">{{ cond.attributeName }}</h4>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-mono font-bold">{{ cond.conditionCode }}</span>
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ cond.valueDataType }}</span>
+                </div>
               </div>
-              <div class="flex flex-col">
-                <span class="text-[10px] font-bold text-slate-400 uppercase">Lookback</span>
-                <span class="text-slate-700 font-bold">{{ t.overrideLookbackPeriod || 'N/A' }}</span>
+              <div *ngIf="pendingOverrides[cond.id]?.value || pendingOverrides[cond.id]?.lookback" 
+                   class="px-3 py-1 bg-indigo-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100">
+                Custom Active
               </div>
             </div>
-            <button (click)="deleteThreshold(t.id)" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Global Defaults -->
+              <div class="space-y-4 p-4 bg-slate-50/50 rounded-xl border border-slate-100/50">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Global Platform Default</span>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-500 block uppercase">Default Value</span>
+                    <span class="text-slate-900 font-bold text-sm">{{ cond.thresholdValue }}</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold text-slate-500 block uppercase">Default Lookback</span>
+                    <span class="text-slate-900 font-bold text-sm">{{ cond.lookbackPeriod }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Your Overrides -->
+              <div class="space-y-4">
+                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-2">Your Bank Override</span>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Override Value</label>
+                    <input type="text" [(ngModel)]="pendingOverrides[cond.id].value" 
+                      class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-300"
+                      placeholder="Enter value">
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Lookback Period</label>
+                    <input type="text" [(ngModel)]="pendingOverrides[cond.id].lookback" 
+                      class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-300"
+                      placeholder="e.g. 7d, 24h">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div *ngIf="thresholds.length === 0" class="mb-8 p-6 bg-blue-50/50 rounded-2xl border border-dashed border-blue-200 text-center">
-        <p class="text-blue-600 text-sm font-medium">No overrides defined. This rule is using global default parameters.</p>
-      </div>
-
-      <form [formGroup]="thresholdForm" (ngSubmit)="saveThreshold()" class="space-y-6">
-        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Create New Override</h3>
-        
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Global Condition Code</label>
-          <input type="text" formControlName="globalConditionCode" 
-            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            placeholder="e.g. GC-001">
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Threshold Value</label>
-            <input type="text" formControlName="overrideValue" 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="e.g. 15000">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Lookback Period</label>
-            <input type="text" formControlName="overrideLookbackPeriod" 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="e.g. 48h">
-          </div>
-        </div>
-
-        <button type="submit" [disabled]="thresholdForm.invalid || loading" 
-          class="w-full py-4 bg-slate-900 hover:bg-black text-white font-bold rounded-xl transition-all duration-200 disabled:opacity-50 shadow-xl shadow-slate-200">
-          {{ loading ? 'Saving...' : 'Apply Override' }}
-        </button>
-      </form>
+    <!-- Footer -->
+    <div class="px-8 py-6 border-t border-slate-100 bg-slate-50/80 flex justify-end gap-3 sticky bottom-0 z-10">
+      <button (click)="closeThresholdModal()" 
+        class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">
+        Cancel Changes
+      </button>
+      <button (click)="saveAllOverrides()" [disabled]="loading || !selectedRule"
+        class="px-8 py-2.5 bg-slate-900 hover:bg-black text-white text-sm font-bold rounded-xl shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-50">
+        {{ loading ? 'Saving...' : 'Apply Overrides' }}
+      </button>
     </div>
   </div>
 </div>

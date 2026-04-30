@@ -49,6 +49,7 @@ export interface UpdateTenantRuleRequestDto {
 export interface CreateTenantRuleThresholdRequestDto {
   tenantRuleCode: string;
   globalConditionCode: string;
+  globalConditionId?: string; // Added to help backend resolve the reference
   overrideValue?: string;
   overrideLookbackPeriod?: string;
 }
@@ -56,7 +57,6 @@ export interface CreateTenantRuleThresholdRequestDto {
 export interface UpdateTenantRuleThresholdRequestDto {
   overrideValue?: string;
   overrideLookbackPeriod?: string;
-  overrideAggregationFunction?: string;
 }
 
 export interface GlobalScenarioResponseDto {
