@@ -1,7 +1,7 @@
 export enum TenantStatus {
   ACTIVE = 'ACTIVE',
   SUSPENDED = 'SUSPENDED',
-  DEACTIVATED = 'DEACTIVATED'
+  DEPROVISIONED = 'DEPROVISIONED'
 }
 
 export interface TenantResponseDto {
@@ -31,12 +31,13 @@ export interface CreateTenantRequestDto {
 }
 
 export interface UpdateTenantRequestDto {
-  institutionName?: string;
-  countryCode?: string;
+  institutionName: string;
+  countryCode: string;
   regulatoryJurisdiction?: string;
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
+  status: TenantStatus;
 }
 
 export interface Page<T> {

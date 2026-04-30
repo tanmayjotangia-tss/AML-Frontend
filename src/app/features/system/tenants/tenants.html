@@ -70,23 +70,23 @@
                     [ngClass]="{
                       'active': tenant.status === 'ACTIVE',
                       'suspended': tenant.status === 'SUSPENDED',
-                      'deactivated': tenant.status === 'DEACTIVATED'
+                      'deactivated': tenant.status === 'DEPROVISIONED'
                     }">
                 <span class="status-dot"
                       [ngClass]="{
                         'active': tenant.status === 'ACTIVE',
                         'suspended': tenant.status === 'SUSPENDED',
-                        'deactivated': tenant.status === 'DEACTIVATED'
+                        'deactivated': tenant.status === 'DEPROVISIONED'
                       }"></span>
                 {{ tenant.status }}
               </span>
             </td>
             <td>
               <div style="display: flex; gap: 0.5rem;">
-                <button class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Edit">
+                <button (click)="openEditForm(tenant, $event)" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Edit">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </button>
-                <button class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Reset Admin Credentials" *ngIf="tenant.status === 'ACTIVE'">
+                <button (click)="resetAdminCredentials(tenant, $event)" class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors" style="border: none; background: transparent; cursor: pointer" title="Reset Admin Credentials" *ngIf="tenant.status === 'ACTIVE'">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.125rem; height: 1.125rem;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 </button>
               </div>
@@ -100,6 +100,7 @@
 
 <app-tenant-form 
   *ngIf="showCreateForm" 
+  [tenantToEdit]="tenantToEdit"
   (close)="closeCreateForm()" 
   (saved)="onTenantCreated()">
 </app-tenant-form>
@@ -108,5 +109,6 @@
   *ngIf="viewingTenant"
   [tenant]="viewingTenant"
   (close)="closeTenantDetail()"
+  (edit)="openEditForm($event)"
   (statusChanged)="loadTenants()">
 </app-tenant-detail>

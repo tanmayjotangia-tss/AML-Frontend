@@ -80,7 +80,7 @@
 
 .status-pill.active { background-color: #ecfdf5; color: #059669; }
 .status-pill.suspended { background-color: #fffbeb; color: #d97706; }
-.status-pill.deactivated { background-color: #fef2f2; color: #dc2626; }
+.status-pill.deprovisioned { background-color: #fef2f2; color: #dc2626; }
 
 .close-btn {
   padding: 0.5rem;

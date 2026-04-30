@@ -50,6 +50,10 @@ export class CaseDetail implements OnInit {
   get canPerformAction(): boolean {
     if (!this.caseData) return false;
     const userRole = this.tokenService.getRole();
+    const status = this.caseData.status;
+
+    // Cannot perform actions on closed cases
+    if (status.startsWith('CLOSED')) return false;
     
     // Bank Admin is read-only for investigation actions
     if (userRole === Role.BANK_ADMIN) return false;
@@ -64,25 +68,41 @@ export class CaseDetail implements OnInit {
     const userRole = this.tokenService.getRole();
     const status = this.caseData.status;
 
-    // Admin can reassign if case is NEW (OPEN) and not being processed
-    if (userRole === Role.BANK_ADMIN) {
+    // No reassignment for closed cases
+    if (status.startsWith('CLOSED')) return false;
+
+    // Admin can reassign if case is OPEN
+    if (userRole === Role.BANK_ADMIN || userRole === Role.SUPER_ADMIN) {
       return status === 'OPEN';
     }
 
     // Assignee can always reassign (delegate) as long as it's not closed
     const isAssignee = this.caseData.assignedTo === this.userId || this.caseData.assignedTo === this.userCode;
-    return isAssignee && !status.startsWith('CLOSED');
+    return isAssignee;
   }
 
   getActionTooltip(): string {
     if (this.canPerformAction) return '';
+    const status = this.caseData?.status;
+    if (status?.startsWith('CLOSED')) return 'Actions are disabled for closed cases';
+    
     const userRole = this.tokenService.getRole();
     if (userRole === Role.BANK_ADMIN) return 'Bank Administrators have read-only access to cases';
+    
+    if (this.caseData && !this.hasNotes && !status?.startsWith('CLOSED')) {
+       const isAssignee = this.caseData.assignedTo === this.userId || this.caseData.assignedTo === this.userCode;
+       if (isAssignee) return 'Add at least one investigation note before closing';
+    }
+    
     return 'Only the assigned Compliance Officer can perform investigative actions';
   }
 
   get isBankAdmin(): boolean {
     return this.tokenService.getRole() === Role.BANK_ADMIN;
+  }
+
+  get isClosed(): boolean {
+    return !!this.caseData?.status.startsWith('CLOSED');
   }
 
   get hasNotes(): boolean {

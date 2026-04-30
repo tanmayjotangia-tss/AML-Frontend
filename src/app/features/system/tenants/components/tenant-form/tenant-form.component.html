@@ -2,7 +2,7 @@
   <div class="drawer-container" (click)="$event.stopPropagation()">
     
     <div class="drawer-header">
-      <h2>Provision New Tenant</h2>
+      <h2>{{ isEditMode ? 'Edit Tenant Details' : 'Provision New Tenant' }}</h2>
       <button class="close-btn" (click)="onCancel()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1.25rem; height: 1.25rem;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
@@ -70,6 +70,14 @@
             </div>
           </div>
 
+          <div class="form-group" *ngIf="isEditMode">
+            <label for="status" class="form-label">Account Status <span style="color: #ef4444;">*</span></label>
+            <select id="status" formControlName="status" class="form-input">
+              <option *ngFor="let s of tenantStatuses" [value]="s">{{ s }}</option>
+            </select>
+            <div class="form-help">Current operational status of this tenant.</div>
+          </div>
+
           <div class="form-group">
             <label for="address" class="form-label">Headquarters Address</label>
             <textarea id="address" formControlName="address" rows="2" placeholder="Full address"
@@ -102,8 +110,8 @@
 
     <div class="drawer-footer">
       <button type="button" class="btn-ghost" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
-      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="tenantForm.invalid || tenantForm.pending || isSubmitting">
-        <span *ngIf="!isSubmitting">Provision Tenant</span>
+      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="(tenantForm.invalid && !isEditMode) || (isEditMode && (f['institutionName'].invalid || f['countryCode'].invalid)) || isSubmitting">
+        <span *ngIf="!isSubmitting">{{ isEditMode ? 'Update Tenant' : 'Provision Tenant' }}</span>
         <div *ngIf="isSubmitting" class="spinner"></div>
       </button>
     </div>

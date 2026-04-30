@@ -22,6 +22,7 @@ export class Tenants implements OnInit {
   
   showCreateForm = false;
   viewingTenant?: TenantResponseDto;
+  tenantToEdit?: TenantResponseDto;
 
   ngOnInit(): void {
     this.loadTenants();
@@ -65,10 +66,12 @@ export class Tenants implements OnInit {
 
   closeCreateForm(): void {
     this.showCreateForm = false;
+    this.tenantToEdit = undefined;
   }
 
   onTenantCreated(): void {
     this.showCreateForm = false;
+    this.tenantToEdit = undefined;
     this.loadTenants();
   }
 
@@ -77,8 +80,30 @@ export class Tenants implements OnInit {
     this.cdr.detectChanges();
   }
 
+  openEditForm(tenant: TenantResponseDto, event?: MouseEvent): void {
+    if (event) event.stopPropagation(); // Prevent opening detail view when clicked from list
+    this.viewingTenant = undefined; // Close detail drawer if open
+    this.tenantToEdit = tenant;
+    this.showCreateForm = true;
+    this.cdr.detectChanges();
+  }
+
   closeTenantDetail(): void {
     this.viewingTenant = undefined;
     this.cdr.detectChanges();
+  }
+
+  resetAdminCredentials(tenant: TenantResponseDto, event: MouseEvent): void {
+    event.stopPropagation();
+    if (!confirm(`Are you sure you want to reset admin credentials for ${tenant.institutionName}?`)) return;
+
+    this.tenantService.resetAdminCredentials(tenant.id).subscribe({
+      next: () => {
+        window.alert('Admin credentials have been reset and sent to the contact email.');
+      },
+      error: (err) => {
+        window.alert(err.error?.message || 'Failed to reset credentials.');
+      }
+    });
   }
 }

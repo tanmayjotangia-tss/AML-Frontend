@@ -44,10 +44,10 @@ export class Alerts implements OnInit {
 
   // ─── Severity Counts (stats bar) ───────────────────────────────────────────
   severityCounts: Partial<SeverityCounts> = {};
-  
+
   // ─── Selection ─────────────────────────────────────────────────────────────
   selectedAlertIds = new Set<string>();
-  
+
   // ─── Create Case Modal ─────────────────────────────────────────────────────
   showCreateCaseModal = false;
   casePriority = 'MEDIUM';
@@ -105,7 +105,7 @@ export class Alerts implements OnInit {
         this.severityCounts = res.data || {};
         this.cdr.detectChanges();
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -201,21 +201,21 @@ export class Alerts implements OnInit {
   getSeverityConfig(severity: string): { cls: string; dot: string; label: string } {
     const map: Record<string, { cls: string; dot: string; label: string }> = {
       CRITICAL: { cls: 'badge-critical', dot: 'dot-critical', label: 'Critical' },
-      HIGH:     { cls: 'badge-high',     dot: 'dot-high',     label: 'High'     },
-      MEDIUM:   { cls: 'badge-medium',   dot: 'dot-medium',   label: 'Medium'   },
-      LOW:      { cls: 'badge-low',      dot: 'dot-low',      label: 'Low'      },
+      HIGH: { cls: 'badge-high', dot: 'dot-high', label: 'High' },
+      MEDIUM: { cls: 'badge-medium', dot: 'dot-medium', label: 'Medium' },
+      LOW: { cls: 'badge-low', dot: 'dot-low', label: 'Low' },
     };
     return map[severity] || { cls: 'badge-low', dot: 'dot-low', label: severity };
   }
 
   getStatusConfig(status: AlertStatus): { cls: string; label: string } {
     const map: Record<AlertStatus, { cls: string; label: string }> = {
-      NEW:                   { cls: 'status-new',        label: 'New'            },
-      UNDER_REVIEW:          { cls: 'status-review',     label: 'Under Review'   },
-      ESCALATED:             { cls: 'status-escalated',  label: 'Escalated'      },
-      CLOSED_CONFIRMED:      { cls: 'status-confirmed',  label: 'Confirmed'      },
-      CLOSED_FALSE_POSITIVE: { cls: 'status-false-pos',  label: 'False Positive' },
-      BUNDLED_TO_CASE:       { cls: 'status-review',     label: 'Bundled'        },
+      NEW: { cls: 'status-new', label: 'New' },
+      UNDER_REVIEW: { cls: 'status-review', label: 'Under Review' },
+      ESCALATED: { cls: 'status-escalated', label: 'Escalated' },
+      CLOSED_CONFIRMED: { cls: 'status-confirmed', label: 'Confirmed' },
+      CLOSED_FALSE_POSITIVE: { cls: 'status-false-pos', label: 'False Positive' },
+      BUNDLED_TO_CASE: { cls: 'status-review', label: 'Bundled' },
     };
     return map[status] || { cls: 'status-new', label: status };
   }
@@ -243,7 +243,7 @@ export class Alerts implements OnInit {
   }
 
   // ─── Bundling ──────────────────────────────────────────────────────────────
-  
+
   toggleSelection(alertId: string): void {
     if (this.selectedAlertIds.has(alertId)) {
       this.selectedAlertIds.delete(alertId);
@@ -264,9 +264,9 @@ export class Alerts implements OnInit {
   toggleAll(event: any): void {
     if (event.target.checked) {
       if (this.alerts.length === 0) return;
-      
+
       const currentCustomerId = this.getSelectedCustomerId() || this.alerts[0].customer?.id;
-      
+
       // Select only alerts matching the first customer found
       const mismatch = this.alerts.some(a => a.customer?.id !== currentCustomerId);
       if (mismatch && this.selectedAlertIds.size === 0) {
@@ -301,7 +301,7 @@ export class Alerts implements OnInit {
 
   submitCreateCase(): void {
     if (!this.caseAssignee || this.isCreatingCase) return;
-    
+
     this.isCreatingCase = true;
     const selectedRefs = this.alerts
       .filter(a => this.selectedAlertIds.has(a.id))
