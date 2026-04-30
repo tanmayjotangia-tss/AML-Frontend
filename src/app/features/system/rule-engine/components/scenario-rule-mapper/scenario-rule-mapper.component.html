@@ -78,6 +78,53 @@
             </div>
           </div>
         </div>
+
+        <!-- Rule Conditions -->
+        <div *ngIf="!isLoadingConditions" class="conditions-card">
+          <div class="conditions-header">
+            <h4>Rule Logic & Conditions</h4>
+          </div>
+          
+          <div *ngIf="selectedRuleConditions.length > 0" class="conditions-grid">
+            <div *ngFor="let cond of selectedRuleConditions" class="condition-item-card">
+              <div class="condition-top">
+                <span class="condition-attr">{{ cond.attributeName }}</span>
+                <span class="condition-code-badge">{{ cond.conditionCode }}</span>
+              </div>
+              
+              <div class="condition-body">
+                <span class="condition-label">Threshold:</span>
+                <span class="condition-value-box">{{ cond.thresholdValue }}</span>
+                <span class="data-type-tag">{{ cond.valueDataType }}</span>
+              </div>
+
+              <div class="condition-footer">
+                <div class="footer-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 0.875rem; height: 0.875rem;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span>Lookback: <strong>{{ cond.lookbackPeriod }}</strong></span>
+                </div>
+                <div class="footer-item" *ngIf="cond.sysUpdatedAt">
+                  <span>Updated: {{ cond.sysUpdatedAt | date:'shortDate' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="selectedRuleConditions.length === 0 && !errorConditions" style="padding: 2rem; text-align: center; color: #64748b; background-color: #f8fafc; border-radius: 0.5rem; border: 1px dashed #e2e8f0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 2rem; height: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <p style="font-size: 0.875rem; margin: 0;">No conditions defined for this rule repository entry.</p>
+          </div>
+        </div>
+
+        <div *ngIf="isLoadingConditions" class="loading-state" style="margin-top: 1rem;">
+          <div class="spinner" style="border-top-color: #2563eb; width: 1.5rem; height: 1.5rem;"></div>
+          <p style="font-size: 0.875rem;">Fetching rule logic details...</p>
+        </div>
+        
+        <div *ngIf="errorConditions" class="error-message" style="margin-top: 1rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 1rem; height: 1rem;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          {{ errorConditions }}
+        </div>
       </div>
 
     </div>

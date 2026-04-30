@@ -60,3 +60,14 @@ export interface MappedRuleDisplay {
   severity: string;
   baseRiskScore: number;
 }
+export interface GlobalRuleConditionResponseDto {
+  id: string;
+  conditionCode: string;
+  ruleId: string;
+  attributeName: string;
+  thresholdValue: string;
+  lookbackPeriod: string;
+  valueDataType: string;
+  sysCreatedAt?: string;
+  sysUpdatedAt?: string;
+}

@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, inject, ChangeDetectorR
 import { CommonModule } from '@angular/common';
 import { GlobalScenarioService } from '../../../../../core/services/global-scenario.service';
 import { GlobalRuleService } from '../../../../../core/services/global-rule.service';
-import { GlobalRuleResponseDto } from '../../../../../core/models/rule-engine.model';
+import { GlobalRuleResponseDto, GlobalRuleConditionResponseDto } from '../../../../../core/models/rule-engine.model';
 
 @Component({
   selector: 'app-scenario-rule-mapper',
@@ -24,9 +24,14 @@ export class ScenarioRuleMapperComponent implements OnInit {
   rules: GlobalRuleResponseDto[] = [];
   isLoadingRules = true;
   error = '';
-  
+
   selectedRule?: GlobalRuleResponseDto;
   isSubmitting = false;
+
+  // State for rule conditions
+  selectedRuleConditions: GlobalRuleConditionResponseDto[] = [];
+  isLoadingConditions = false;
+  errorConditions = '';
 
   ngOnInit() {
     this.loadRules();
@@ -44,7 +49,7 @@ export class ScenarioRuleMapperComponent implements OnInit {
             fetchedRules = res.data?.content || [];
           }
           this.rules = fetchedRules.filter(r => !this.excludeRuleIds.includes(r.id));
-        } catch(e) {
+        } catch (e) {
           console.error(e);
         } finally {
           this.isLoadingRules = false;
@@ -62,18 +67,53 @@ export class ScenarioRuleMapperComponent implements OnInit {
 
   selectRule(rule: GlobalRuleResponseDto) {
     this.selectedRule = rule;
+    this.loadConditions(rule.id);
   }
 
   cancelSelection() {
     this.selectedRule = undefined;
   }
 
-  onCancel() {
-    if (this.isSubmitting) return;
-    this.close.emit();
+  // Load conditions for a specific rule
+  loadConditions(ruleId: string): void {
+    this.isLoadingConditions = true;
+    this.errorConditions = '';
+    this.ruleService.getConditionsByRuleId(ruleId).subscribe({
+      next: (res) => {
+        try {
+          if (Array.isArray(res.data)) {
+            this.selectedRuleConditions = res.data;
+          } else {
+
+            this.selectedRuleConditions = (res.data as any)?.content || [];
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          this.isLoadingConditions = false;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorConditions = 'Failed to load conditions.';
+        this.isLoadingConditions = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
-  onSubmit() {
+
+  onCancel(): void {
+    this.close.emit();
+    this.selectedRule = undefined;
+    this.selectedRuleConditions = [];
+    this.isSubmitting = false;
+    this.error = '';
+    this.errorConditions = '';
+  }
+
+  onSubmit(): void {
     if (!this.selectedRule) return;
 
     this.isSubmitting = true;
@@ -91,5 +131,10 @@ export class ScenarioRuleMapperComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Getter to support typo in template
+  get isSubmittin(): boolean {
+    return this.isSubmitting;
   }
 }

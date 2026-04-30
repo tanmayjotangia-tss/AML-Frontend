@@ -5,7 +5,7 @@ import { GeographicRiskService } from '../../../core/services/geographic-risk.se
 import { GlobalScenarioService } from '../../../core/services/global-scenario.service';
 import { GlobalRuleService } from '../../../core/services/global-rule.service';
 import { GeographicRiskRatingResponseDto } from '../../../core/models/geographic-risk.model';
-import { GlobalScenarioResponseDto, GlobalRuleResponseDto } from '../../../core/models/rule-engine.model';
+import { GlobalScenarioResponseDto, GlobalRuleResponseDto, GlobalRuleConditionResponseDto } from '../../../core/models/rule-engine.model';
 import { GeoRiskFormComponent } from './components/geo-risk-form/geo-risk-form.component';
 import { ScenarioFormComponent } from './components/scenario-form/scenario-form.component';
 import { ScenarioDetailComponent } from './components/scenario-detail/scenario-detail.component';
@@ -41,7 +41,7 @@ export class RuleEngine implements OnInit {
   errorScenarios = '';
   showScenarioForm = false;
   selectedScenarioForEdit?: GlobalScenarioResponseDto;
-  
+
   // Detail View State
   viewingScenarioDetail?: GlobalScenarioResponseDto;
 
@@ -49,6 +49,46 @@ export class RuleEngine implements OnInit {
   globalRules: GlobalRuleResponseDto[] = [];
   isLoadingGlobalRules = true;
   errorGlobalRules = '';
+
+  // Selected Rule Conditions State
+  selectedRuleId: string | null = null;
+  selectedRuleConditions: GlobalRuleConditionResponseDto[] = [];
+  isLoadingConditions = false;
+  errorConditions = '';
+
+  // Load conditions for a rule
+  loadConditions(ruleId: string): void {
+    this.isLoadingConditions = true;
+    this.errorConditions = '';
+    this.globalRuleService.getConditionsByRuleId(ruleId).subscribe({
+      next: (res) => {
+        try {
+          if (Array.isArray(res.data)) {
+            this.selectedRuleConditions = res.data;
+          } else {
+            this.selectedRuleConditions = (res.data as any)?.content || [];
+          }
+          this.selectedRuleId = ruleId;
+        } catch (e) {
+          console.error(e);
+        } finally {
+          this.isLoadingConditions = false;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorConditions = 'Failed to load rule conditions.';
+        this.isLoadingConditions = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // Select a rule to view its conditions
+  selectRule(rule: GlobalRuleResponseDto): void {
+    this.loadConditions(rule.id);
+  }
 
   ngOnInit(): void {
     // Check for tab query parameter
@@ -63,7 +103,7 @@ export class RuleEngine implements OnInit {
   setTab(tab: Tab) {
     this.activeTab = tab;
     this.viewingScenarioDetail = undefined;
-    
+
     if (tab === 'GEO_RISK' && this.ratings.length === 0) {
       this.loadRatings();
     } else if (tab === 'SCENARIOS' && this.scenarios.length === 0) {
@@ -77,14 +117,14 @@ export class RuleEngine implements OnInit {
   loadGlobalRules(): void {
     this.isLoadingGlobalRules = true;
     this.errorGlobalRules = '';
-    
+
     this.globalRuleService.listRules(0, 100).subscribe({
       next: (res) => {
         try {
           if (Array.isArray(res.data)) {
             this.globalRules = res.data;
           } else {
-            this.globalRules = res.data?.content || [];
+            this.globalRules = (res.data as any)?.content || [];
           }
         } catch (e) {
           console.error(e);
@@ -103,11 +143,11 @@ export class RuleEngine implements OnInit {
   }
 
   // --- GEO RISK METHODS ---
-  
+
   loadRatings(): void {
     this.isLoadingRatings = true;
     this.errorRatings = '';
-    
+
     this.geoRiskService.listRatings(0, 50).subscribe({
       next: (res) => {
         try {
@@ -165,7 +205,7 @@ export class RuleEngine implements OnInit {
   loadScenarios(): void {
     this.isLoadingScenarios = true;
     this.errorScenarios = '';
-    
+
     this.scenarioService.listScenarios(0, 50).subscribe({
       next: (res) => {
         try {

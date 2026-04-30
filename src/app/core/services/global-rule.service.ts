@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse } from '../../shared/models/api-response.model';
 import { Page } from '../models/tenant.model';
-import { GlobalRuleResponseDto } from '../models/rule-engine.model';
+import { GlobalRuleResponseDto, GlobalRuleConditionResponseDto } from '../models/rule-engine.model';
 
 @Injectable({
   providedIn: 'root'
@@ -23,4 +23,11 @@ export class GlobalRuleService {
     
     return this.http.get<ApiResponse<Page<GlobalRuleResponseDto>>>(this.API_URL, { params });
   }
+
+
+  getConditionsByRuleId(ruleId: string): Observable<ApiResponse<GlobalRuleConditionResponseDto[]>> {
+    const url = `${this.API_URL}/${ruleId}/conditions`;
+    return this.http.get<ApiResponse<GlobalRuleConditionResponseDto[]>>(url);
+  }
 }
+
