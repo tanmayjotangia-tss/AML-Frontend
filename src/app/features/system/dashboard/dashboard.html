@@ -21,7 +21,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-md"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
       </div>
       <div class="stat-content">
-        <span class="stat-label">Total Tenants</span>
+        <span class="stat-label">Total Banks</span>
         <div class="stat-value-row">
           <span class="stat-value">{{ stats.totalTenants }}</span>
           <span class="stat-trend positive">{{ stats.activeTenants }} Active</span>
@@ -78,18 +78,18 @@
     <div class="content-column left">
       <div class="data-card">
         <div class="card-header">
-          <h2 class="card-title">Recently Provisioned Tenants</h2>
+          <h2 class="card-title">Recently Provisioned Banks</h2>
           <button class="view-all-btn" (click)="navigateToTenants()">View All</button>
         </div>
         
         <div class="loading-overlay" *ngIf="isLoading">
           <div class="spinner"></div>
-          <p>Gathering tenant data...</p>
+          <p>Gathering banks data...</p>
         </div>
 
         <div class="empty-state" *ngIf="!isLoading && recentTenants.length === 0">
-          <p>No tenants registered yet.</p>
-          <button class="btn-ghost-sm" (click)="navigateToTenants()">Provision New</button>
+          <p>No banks registered yet.</p>
+          <button class="btn-ghost-sm" (click)="navigateToTenants()">Provision New Bank</button>
         </div>
 
         <div class="list-container" *ngIf="!isLoading && recentTenants.length > 0">
@@ -120,7 +120,7 @@
         <div class="actions-grid">
           <button class="action-btn blue" (click)="navigateToTenants()">
             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="17" y1="11" x2="23" y2="11"></line></svg></div>
-            <span>New Tenant</span>
+            <span>New Bank</span>
           </button>
           <button class="action-btn amber" (click)="navigateToRuleEngine('GLOBAL_RULES')">
             <div class="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>

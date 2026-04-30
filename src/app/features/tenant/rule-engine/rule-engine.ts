@@ -11,7 +11,8 @@ import {
   TenantRuleThresholdResponseDto,
   UpdateTenantRuleRequestDto,
   GlobalScenarioResponseDto,
-  ScenarioExecutionSummary
+  ScenarioExecutionSummary,
+  BatchScenarioExecutionSummary // <-- Added this import
 } from '../../../core/models/tenant-rule.model';
 import { finalize } from 'rxjs';
 
@@ -54,7 +55,9 @@ export class RuleEngine implements OnInit {
   execStartDate = '';
   execEndDate = '';
   isExecuting = false;
-  executionResult: ScenarioExecutionSummary | null = null;
+  
+  // Updated to accept both single and batch summaries
+  executionResult: ScenarioExecutionSummary | BatchScenarioExecutionSummary | null = null; 
   executionError: string | null = null;
   showExecutionPanel = false;
 
@@ -190,6 +193,34 @@ export class RuleEngine implements OnInit {
       },
       error: (err) => {
         this.executionError = err?.error?.message || 'Scenario execution failed. Please try again.';
+        this.isExecuting = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ============================================================================
+  // NEW BATCH EXECUTION METHOD
+  // ============================================================================
+  runAllActiveScenarios(): void {
+    if (this.isExecuting) return;
+    this.isExecuting = true;
+    this.executionResult = null;
+    this.executionError = null;
+
+    const requestDto = this.executionMode === 'FORENSIC' && this.execStartDate && this.execEndDate
+      ? { globalLookbackStart: new Date(this.execStartDate).toISOString(), globalLookbackEnd: new Date(this.execEndDate).toISOString() }
+      : undefined;
+
+    this.tenantScenarioService.executeAllActiveScenarios(requestDto).subscribe({
+      next: (res) => {
+        this.executionResult = res.data;
+        this.isExecuting = false;
+        this.showExecutionPanel = true; // Show panel if running from main list
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.executionError = err?.error?.message || 'Batch scenario execution failed. Please try again.';
         this.isExecuting = false;
         this.cdr.detectChanges();
       }

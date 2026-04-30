@@ -8,7 +8,8 @@ import {
   TenantScenarioWithRulesDto,
   GlobalScenarioResponseDto,
   ScenarioExecutionRequestDto,
-  ScenarioExecutionSummary
+  ScenarioExecutionSummary,
+  BatchScenarioExecutionSummary // <-- Make sure to export this in your models file
 } from '../models/tenant-rule.model';
 
 @Injectable({
@@ -51,6 +52,14 @@ export class TenantScenarioService {
   executeScenario(tenantScenarioId: string, requestDto?: ScenarioExecutionRequestDto): Observable<ApiResponse<ScenarioExecutionSummary>> {
     return this.http.post<ApiResponse<ScenarioExecutionSummary>>(
       `${this.EXEC_URL}/${tenantScenarioId}/execute`,
+      requestDto ?? {}
+    );
+  }
+
+  
+  executeAllActiveScenarios(requestDto?: ScenarioExecutionRequestDto): Observable<ApiResponse<BatchScenarioExecutionSummary>> {
+    return this.http.post<ApiResponse<BatchScenarioExecutionSummary>>(
+      `${this.EXEC_URL}/execute-all`,
       requestDto ?? {}
     );
   }

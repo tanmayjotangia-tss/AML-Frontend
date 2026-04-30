@@ -112,3 +112,14 @@ export interface ScenarioExecutionSummary {
   processingTimeMs: number;
   status: string;
 }
+
+export interface BatchScenarioExecutionSummary {
+  executionTimestamp: string;
+  executionMode: string;
+  timeWindowStart?: string | null;
+  timeWindowEnd?: string | null;
+  totalBreachesFound: number;
+  breaches: RuleBreachResult[];
+  processingTimeMs: number;
+  status: string;
+}
