@@ -14,3 +14,16 @@ export interface PlatformAuditLog {
   userAgent?: string;
   sysCreatedAt: string;
 }
+
+export interface TenantAuditLog {
+  id: string;
+  actorId?: string;
+  actionCategory: string;
+  actionPerformed: string;
+  targetEntityType: string;
+  targetEntityId?: string;
+  prevState?: any;
+  nextState?: any;
+  ipAddress?: string;
+  sysCreatedAt: string;
+}

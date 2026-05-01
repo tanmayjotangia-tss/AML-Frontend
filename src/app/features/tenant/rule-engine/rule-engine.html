@@ -152,15 +152,18 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let item of myScenarios" 
+      <div *ngFor="let item of myScenarios; let i = index" 
         [class]="'rounded-2xl border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group ' + 
           (item.scenario.status === 'PAUSED' ? 'bg-amber-50/50 border-amber-200' : 'bg-white border-slate-200')">
         <div class="p-6">
           <div class="flex justify-between items-start mb-4">
-            <span [class]="'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ' + 
-              (item.scenario.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')">
-              {{ item.scenario.status }}
-            </span>
+            <div class="flex flex-col gap-1">
+              <span [class]="'w-fit px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ' + 
+                (item.scenario.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')">
+                {{ item.scenario.status }}
+              </span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ item.scenario.category || 'Standard' }}</span>
+            </div>
             <button *ngIf="item.scenario.status === 'ACTIVE' && isBankAdmin" (click)="pauseScenario(item.scenario.id)" 
               class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Pause Scenario">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -169,7 +172,7 @@
             </button>
           </div>
 
-          <h3 class="text-xl font-bold text-slate-900 mb-2">Scenario {{ item.scenario.globalScenarioId.substring(0,8) }}</h3>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">#{{ i + 1 }} {{ item.scenario.scenarioName || 'Active Scenario' }}</h3>
           <p class="text-slate-500 text-sm mb-6">Total Rules: {{ item.rules.length }}</p>
 
           <div *ngIf="item.scenario.status === 'PAUSED'" class="mb-4 px-4 py-3 bg-amber-100 rounded-xl border border-amber-200 flex items-center justify-between gap-3">
@@ -207,7 +210,7 @@
 
   <div *ngIf="activeTab === 'ACTIVATION_LIBRARY'">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let scenario of availableGlobalScenarios" 
+      <div *ngFor="let scenario of availableGlobalScenarios; let i = index" 
         class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
         <div>
           <div class="flex items-center gap-3 mb-4">
@@ -218,7 +221,7 @@
             </div>
             <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">{{ scenario.category || 'Standard' }}</span>
           </div>
-          <h3 class="text-xl font-bold text-slate-900 mb-2">{{ scenario.scenarioName }}</h3>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">#{{ i + 1 }} {{ scenario.scenarioName }}</h3>
           <p class="text-slate-500 text-sm mb-6">{{ scenario.description || 'No description available for this global template.' }}</p>
         </div>
         <button *ngIf="isBankAdmin" (click)="activateScenario(scenario.id)" 
@@ -240,7 +243,7 @@
         </svg>
       </button>
       <div>
-        <h2 class="text-2xl font-bold text-slate-900">Scenario Configuration</h2>
+        <h2 class="text-2xl font-bold text-slate-900">{{ selectedScenario.scenario.scenarioName || 'Configuration' }}</h2>
         <p class="text-slate-500">Managing {{ selectedScenario.rules.length }} rules within this scenario.</p>
       </div>
     </div>
@@ -259,7 +262,6 @@
             <td class="px-8 py-6">
               <div class="flex flex-col">
                 <span class="font-bold text-slate-900 text-lg">{{ rule.ruleName }}</span>
-                <span class="text-xs font-mono text-slate-400 mt-1">{{ rule.ruleCode }}</span>
               </div>
             </td>
             <td class="px-8 py-6">

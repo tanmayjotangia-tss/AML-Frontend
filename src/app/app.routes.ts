@@ -33,10 +33,13 @@ export const routes: Routes = [
       { path: 'cases', loadComponent: () => import('./features/tenant/cases/cases').then(m => m.Cases) },
       { path: 'cases/:caseRef', loadComponent: () => import('./features/tenant/cases/case-detail/case-detail').then(m => m.CaseDetail) },
       { path: 'investigation', loadComponent: () => import('./features/tenant/investigation/investigation').then(m => m.Investigation) },
+      { path: 'investigation/customers', loadComponent: () => import('./features/tenant/investigation/customer-investigation/customer-investigation').then(m => m.CustomerInvestigation) },
+      { path: 'investigation/transactions', loadComponent: () => import('./features/tenant/investigation/transaction-investigation/transaction-investigation').then(m => m.TransactionInvestigation) },
       { path: 'str', loadComponent: () => import('./features/tenant/str/str').then(m => m.Str) },
       { path: 'rule-engine', loadComponent: () => import('./features/tenant/rule-engine/rule-engine').then(m => m.RuleEngine), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
       { path: 'users', loadComponent: () => import('./features/tenant/users/users').then(m => m.Users), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
       { path: 'upload', loadComponent: () => import('./features/tenant/upload/upload').then(m => m.Upload), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
+      { path: 'audit-logs', loadComponent: () => import('./features/tenant/audit-logs/audit-logs').then(m => m.AuditLogs), canActivate: [roleGuard], data: { roles: ['BANK_ADMIN'] } },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CaseService } from '../../../core/services/case.service';
 import { TokenService } from '../../../core/auth/token';
 import { CaseResponseDto, CaseStatus } from '../../../core/models/case.model';
@@ -9,7 +9,7 @@ import { Role } from '../../../core/models/user.model';
 @Component({
   selector: 'app-investigation',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './investigation.html',
   styleUrl: './investigation.css',
 })
@@ -36,16 +36,16 @@ export class Investigation implements OnInit {
     this.caseService.getCases(0, 100).subscribe({
       next: (res) => {
         const rawContent = res.data?.content || [];
-        
+
         // Filter for active investigations (In Progress or Escalated)
         const activeStatuses = [CaseStatus.IN_PROGRESS, CaseStatus.ESCALATED, CaseStatus.OPEN];
-        
+
         let filtered = rawContent.filter(c => activeStatuses.includes(c.status as CaseStatus));
 
         // For Compliance Officer, further filter by assignment
         if (this.userRole === Role.COMPLIANCE_OFFICER) {
           const currentUserCode = this.tokenService.getUsername();
-          filtered = filtered.filter(c => 
+          filtered = filtered.filter(c =>
             c.assignedTo === this.userId || c.assignedTo === currentUserCode
           );
         }

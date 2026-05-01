@@ -6,6 +6,8 @@ export enum RuleStatus {
 export interface TenantScenarioResponseDto {
   id: string;
   globalScenarioId: string;
+  scenarioName?: string;
+  category?: string;
   status: RuleStatus;
   sysActivatedBy?: string;
   sysCreatedAt?: string;

@@ -21,12 +21,16 @@ export class ToastService {
     const id = this.counter++;
     const toast: ToastMessage = { id, type, message, duration };
     
-    this.toasts.update(current => [...current, toast]);
+    // Wrap in setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.toasts.update(current => [...current, toast]);
+    });
 
     if (duration > 0) {
       setTimeout(() => this.remove(id), duration);
     }
   }
+
 
   success(message: string, duration?: number) {
     this.show(message, 'success', duration);
@@ -45,6 +49,8 @@ export class ToastService {
   }
 
   remove(id: number) {
-    this.toasts.update(current => current.filter(t => t.id !== id));
+    setTimeout(() => {
+      this.toasts.update(current => current.filter(t => t.id !== id));
+    });
   }
 }

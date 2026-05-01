@@ -12,12 +12,12 @@ export class AuditLogService {
   private http = inject(HttpClient);
   private readonly API_URL = '/api/v1/audit-logs';
 
-  getAuditLogs(page: number = 0, size: number = 20): Observable<ApiResponse<Page<PlatformAuditLog>>> {
+  getAuditLogs<T = any>(page: number = 0, size: number = 20): Observable<ApiResponse<Page<T>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', 'sysCreatedAt,desc');
     
-    return this.http.get<ApiResponse<Page<PlatformAuditLog>>>(this.API_URL, { params });
+    return this.http.get<ApiResponse<Page<T>>>(this.API_URL, { params });
   }
 }

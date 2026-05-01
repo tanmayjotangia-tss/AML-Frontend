@@ -89,8 +89,12 @@ export class Login implements OnInit {
         }
       },
       error: (err) => {
-        this.isSubmitting = false;
-        this.loginError = err.error?.message || 'Authentication failed. Please check your credentials.';
+        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+        // This ensures the state update happens in the next tick
+        setTimeout(() => {
+          this.isSubmitting = false;
+          this.loginError = err.error?.message || 'Authentication failed. Please check your credentials.';
+        });
       }
     });
   }
@@ -111,15 +115,14 @@ export class Login implements OnInit {
       next: () => {
         this.isSubmitting = false;
         // After successful password change, route the user based on role 
-        // Note: the backend clears refresh tokens but the access token is still valid from the initial login
-        // Alternatively, we could force them to re-login. Let's just route them.
-        // We need the role, let's just get it from localStorage (TokenService)
         const role = localStorage.getItem('user_role'); 
         this.routeUser(role || '');
       },
       error: (err) => {
-        this.isSubmitting = false;
-        this.loginError = err.error?.message || 'Failed to change password. Please ensure your old password is correct.';
+        setTimeout(() => {
+          this.isSubmitting = false;
+          this.loginError = err.error?.message || 'Failed to change password. Please ensure your old password is correct.';
+        });
       }
     });
   }
