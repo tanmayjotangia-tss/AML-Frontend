@@ -17,6 +17,36 @@
   align-items: center;
 }
 
+.menu-toggle-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.menu-toggle-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.menu-toggle-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 .topbar-right {
   display: flex;
   align-items: center;

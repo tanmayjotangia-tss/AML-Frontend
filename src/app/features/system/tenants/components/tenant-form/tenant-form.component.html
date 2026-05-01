@@ -26,27 +26,18 @@
             <div class="form-error" *ngIf="f['institutionName'].touched && f['institutionName'].errors?.['required']">Institution name is required.</div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
-            <div class="form-group">
-              <label for="tenantCode" class="form-label">Tenant Code <span style="color: #ef4444;">*</span></label>
-              <input type="text" id="tenantCode" formControlName="tenantCode" placeholder="e.g. SBI"
-                     class="form-input" style="text-transform: uppercase;"
-                     [class.invalid]="f['tenantCode'].touched && f['tenantCode'].invalid">
-              <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['required']">Tenant code is required.</div>
-              <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['pattern']">Must be uppercase alphanumeric.</div>
-              <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['codeTaken']">This tenant code is already in use.</div>
-              <div class="form-help" *ngIf="f['tenantCode'].pending">Validating availability...</div>
-            </div>
-            
-            <div class="form-group">
-              <label for="schemaName" class="form-label">Schema Name <span style="color: #ef4444;">*</span></label>
-              <input type="text" id="schemaName" formControlName="schemaName" placeholder="e.g. t_sbi"
-                     class="form-input" style="text-transform: lowercase;"
-                     [class.invalid]="f['schemaName'].touched && f['schemaName'].invalid">
-              <div class="form-error" *ngIf="f['schemaName'].touched && f['schemaName'].errors?.['required']">Schema name is required.</div>
-              <div class="form-error" *ngIf="f['schemaName'].touched && f['schemaName'].errors?.['pattern']">Must be lowercase alphanumeric with underscores.</div>
-              <div class="form-error" *ngIf="f['schemaName'].touched && f['schemaName'].errors?.['schemaTaken']">This schema name is already in use.</div>
-              <div class="form-help" *ngIf="f['schemaName'].pending">Validating availability...</div>
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="tenantCode" class="form-label">Tenant Code <span style="color: #ef4444;">*</span></label>
+            <input type="text" id="tenantCode" formControlName="tenantCode" placeholder="e.g. SBI"
+                   class="form-input" style="text-transform: uppercase;"
+                   [class.invalid]="f['tenantCode'].touched && f['tenantCode'].invalid">
+            <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['required']">Tenant code is required.</div>
+            <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['pattern']">Must be uppercase alphanumeric.</div>
+            <div class="form-error" *ngIf="f['tenantCode'].touched && f['tenantCode'].errors?.['codeTaken']">This tenant code is already in use.</div>
+            <div class="form-help" *ngIf="f['tenantCode'].pending">Validating availability...</div>
+            <div class="form-error" *ngIf="f['schemaName'].touched && f['schemaName'].errors?.['schemaTaken']">The auto-generated schema name is already in use.</div>
+            <div class="form-help" style="color: #6366f1; font-weight: 600;" *ngIf="f['tenantCode'].value">
+              Schema: {{ f['schemaName'].value }}
             </div>
           </div>
         </div>

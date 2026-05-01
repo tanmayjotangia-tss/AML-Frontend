@@ -14,6 +14,7 @@ import { Role } from '../../core/models/user.model';
   styleUrl: './tenant-layout.css',
 })
 export class TenantLayout {
+  isSidebarOpen = false;
   private tokenService = inject(TokenService);
 
   private allNavItems: NavItem[] = [

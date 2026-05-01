@@ -18,6 +18,7 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./features/system/dashboard/dashboard').then(m => m.Dashboard) },
       { path: 'rule-engine', loadComponent: () => import('./features/system/rule-engine/rule-engine').then(m => m.RuleEngine) },
       { path: 'tenants', loadComponent: () => import('./features/system/tenants/tenants').then(m => m.Tenants) },
+      { path: 'audit-logs', loadComponent: () => import('./features/system/audit-logs/audit-logs').then(m => m.AuditLogs) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

@@ -45,7 +45,7 @@ export class TenantService {
   }
 
   deactivateTenant(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}/deactivate`);
+    return this.http.post<ApiResponse<void>>(`${this.API_URL}/${id}/deactivate`, {});
   }
 
   resetAdminCredentials(id: string): Observable<ApiResponse<void>> {

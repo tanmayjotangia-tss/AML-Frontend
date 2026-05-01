@@ -423,12 +423,12 @@
           </div>
         </label>
         <label
-          [class]="'resolution-option ' + (closeResolution === 'CLOSED_CONFIRMED' ? 'res-selected res-danger' : '')"
-          (click)="closeResolution = 'CLOSED_CONFIRMED'">
+          class="resolution-option"
+          (click)="handleConfirmedThreatClick()">
           <div class="res-icon">🚨</div>
           <div>
             <div class="res-title">Confirmed Threat</div>
-            <div class="res-desc">Suspicious activity confirmed — escalate to STR or case</div>
+            <div class="res-desc">Suspicious activity confirmed — escalate to a case</div>
           </div>
         </label>
       </div>

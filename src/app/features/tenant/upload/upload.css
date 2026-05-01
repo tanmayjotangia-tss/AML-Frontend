@@ -19,7 +19,7 @@
 .badge-icon { width: 1rem; height: 1rem; }
 
 /* ── Tabs ────────────────────────────────────────────────── */
-.tabs { display: flex; gap: 0.25rem; background: #f1f5f9; border-radius: 0.875rem; padding: 0.25rem; margin-bottom: 2rem; width: fit-content; }
+.tabs { display: flex; gap: 0.25rem; background: #f1f5f9; border-radius: 0.875rem; padding: 0.25rem; margin-bottom: 2rem; width: fit-content; max-width: 100%; overflow-x: auto; }
 .tab-btn {
   display: flex; align-items: center; gap: 0.5rem;
   padding: 0.625rem 1.25rem; border-radius: 0.625rem; border: none;
@@ -154,7 +154,7 @@
 .refresh-btn:disabled { opacity: 0.5; }
 
 /* ── Table ───────────────────────────────────────────────── */
-.table-wrap { background: white; border-radius: 1.25rem; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+.table-wrap { background: white; border-radius: 1.25rem; border: 1px solid #e2e8f0; overflow-x: auto; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
 .batch-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .batch-table thead { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
 .batch-table th { padding: 0.875rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; }

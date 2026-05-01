@@ -343,3 +343,12 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+@media (max-width: 480px) {
+  .drawer-footer {
+    flex-wrap: wrap;
+  }
+  .drawer-footer button {
+    flex: 1 1 100%;
+  }
+}

@@ -172,8 +172,19 @@ export class Alerts implements OnInit {
     this.closingAlertId = null;
   }
 
+  handleConfirmedThreatClick(): void {
+    if (this.closingAlertId) {
+      const alertIdToAssign = this.closingAlertId;
+      this.dismissCloseModal();
+      this.selectedAlertIds.clear();
+      this.selectedAlertIds.add(alertIdToAssign);
+      this.showCreateCaseModal = true;
+    }
+  }
+
   submitClose(): void {
     if (!this.closingAlertId || this.isClosing) return;
+
     this.isClosing = true;
     this.alertService.closeAlert(this.closingAlertId, this.closeResolution, this.closeComment).subscribe({
       next: () => {

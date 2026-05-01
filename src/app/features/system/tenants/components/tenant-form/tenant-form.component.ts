@@ -31,9 +31,19 @@ export class TenantFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
+    this.setupAutoSchema();
     if (this.tenantToEdit) {
       this.patchForm(this.tenantToEdit);
     }
+  }
+
+  private setupAutoSchema() {
+    this.tenantForm.get('tenantCode')?.valueChanges.subscribe(value => {
+      if (!this.isEditMode && value) {
+        const schema = value.toLowerCase() + '_schema';
+        this.tenantForm.patchValue({ schemaName: schema }, { emitEvent: false });
+      }
+    });
   }
 
   private initForm() {

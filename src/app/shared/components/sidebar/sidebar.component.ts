@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -14,7 +14,8 @@ export interface NavItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <aside class="sidebar">
+    <div class="sidebar-overlay" *ngIf="isOpen" (click)="closeSidebar.emit()"></div>
+    <aside class="sidebar" [class.sidebar-open]="isOpen">
       <div class="sidebar-header">
         <div class="logo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -53,6 +54,24 @@ export interface NavItem {
       top: 0;
       z-index: 100;
       font-family: 'Inter', sans-serif;
+      transition: transform 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.sidebar-open {
+        transform: translateX(0);
+      }
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      z-index: 90;
+      backdrop-filter: blur(2px);
     }
 
     .sidebar-header {
@@ -153,4 +172,6 @@ export interface NavItem {
 })
 export class SidebarComponent {
   @Input() navItems: NavItem[] = [];
+  @Input() isOpen = false;
+  @Output() closeSidebar = new EventEmitter<void>();
 }

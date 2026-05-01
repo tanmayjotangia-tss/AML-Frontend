@@ -4,7 +4,9 @@
   max-width: 80rem; /* max-w-7xl */
   margin-left: auto;
   margin-right: auto;
+  padding: 0 0.5rem;
   animation: fadeIn 0.3s ease-out;
+  width: 100%;
 }
 
 .rule-engine-header {
@@ -168,6 +170,13 @@
 .table-container {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    max-height: 350px;
+  }
 }
 
 .data-table {
@@ -229,6 +238,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: fit-content;
 }
 
 .risk-bar-track {
@@ -247,6 +257,58 @@
 .risk-bar-fill.low { background-color: #10b981; }
 .risk-bar-fill.medium { background-color: #f59e0b; }
 .risk-bar-fill.high { background-color: #ef4444; }
+
+/* Scenario Card Actions */
+.card-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 0.375rem;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  background-color: #f8fafc;
+}
+
+.action-btn.edit:hover {
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.action-btn.delete:hover {
+  color: #dc2626;
+  background-color: #fef2f2;
+}
+
+.severity-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.severity-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+}
+
+.severity-dot.high, .severity-dot.critical { background-color: #ef4444; }
+.severity-dot.medium { background-color: #f59e0b; }
+.severity-dot.low { background-color: #10b981; }
 
 /* Scenario Grid */
 .scenario-grid {
@@ -343,6 +405,12 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+}
+
+.table-section, .conditions-section {
+  width: 100%;
+  min-width: 0;
 }
 
 @media (min-width: 1280px) {
@@ -402,6 +470,11 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: #0f172a;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .close-panel-btn {
@@ -448,6 +521,7 @@
   align-items: baseline;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .cond-value {
@@ -477,4 +551,76 @@
 @keyframes slideInRight {
   from { transform: translateX(20px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 1279px) {
+  .conditions-section {
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .rule-engine-header, .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  
+  .section-header .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabs-navigation {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+  }
+  .tabs-list {
+    min-width: max-content;
+    gap: 1.25rem;
+  }
+
+  /* Global Rule Repo specific mobile tweaks */
+  .panel-header {
+    padding: 1rem;
+  }
+  .panel-content {
+    padding: 1rem;
+  }
+  .cond-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Geo Risk Table specific refinements */
+  .data-table th:nth-child(3), 
+  .data-table td:nth-child(3),
+  .data-table th:nth-child(5), 
+  .data-table td:nth-child(5) {
+    display: none; /* Hide FATF Status and Effective Date on small mobile */
+  }
+
+  /* Global Rules Table specific refinements */
+  .data-table th:nth-child(2), 
+  .data-table td:nth-child(2) {
+    display: none; /* Hide Rule Type on small mobile */
+  }
+
+  .risk-bar-track {
+    width: 2.5rem; /* Narrower risk bar */
+  }
+}
+
+@media (max-width: 480px) {
+  .scenario-card {
+    padding: 1.25rem;
+  }
+  
+  .scenario-title {
+    font-size: 1rem;
+  }
 }

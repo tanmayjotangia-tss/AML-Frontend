@@ -419,7 +419,19 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 1200px) {
-  .dashboard-layout {
+  .dashboard-layout, .dashboard-layout.admin-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .admin-actions {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
