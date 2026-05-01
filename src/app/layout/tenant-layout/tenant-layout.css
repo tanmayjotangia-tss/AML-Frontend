@@ -17,3 +17,13 @@
   flex: 1;
   overflow-y: auto;
 }
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .content-area {
+    padding: 16px;
+  }
+}

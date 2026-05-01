@@ -121,3 +121,19 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+@media (max-width: 768px) {
+  .exec-panel {
+    padding: 1.5rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .exec-mode-btn {
+    padding: 0.75rem;
+  }
+  .exec-mode-btn .text-2xl {
+    font-size: 1.5rem;
+  }
+}

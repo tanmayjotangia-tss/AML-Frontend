@@ -1,7 +1,7 @@
 <div class="layout-container">
-  <app-sidebar [navItems]="systemNavItems"></app-sidebar>
+  <app-sidebar [navItems]="systemNavItems" [isOpen]="isSidebarOpen" (closeSidebar)="isSidebarOpen = false"></app-sidebar>
   <div class="main-content">
-    <app-topbar></app-topbar>
+    <app-topbar (toggleMenu)="isSidebarOpen = !isSidebarOpen"></app-topbar>
     <main class="page-content">
       <router-outlet></router-outlet>
     </main>

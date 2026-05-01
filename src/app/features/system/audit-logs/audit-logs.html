@@ -1,0 +1,106 @@
+<div class="audit-logs-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">System Audit Logs</h1>
+      <p class="page-subtitle">Track and review all administrative actions across the platform</p>
+    </div>
+    <div class="header-stat">
+      <div class="flex flex-col items-end">
+        <span class="total-count">{{ totalElements }}</span>
+        <span class="total-label">Total Logs</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="loader-ring"></div>
+    <p>Loading audit logs...</p>
+  </div>
+
+  <div *ngIf="loadError && !loading" class="error-banner">
+    ⚠ {{ loadError }}
+  </div>
+
+  <div *ngIf="!loading && logs.length > 0" class="table-card">
+    <div class="table-responsive">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th class="w-10"></th>
+            <th>Timestamp</th>
+            <th>Actor Role</th>
+            <th>Action Category</th>
+            <th>Action Performed</th>
+            <th>Target Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let log of logs">
+            <!-- Main Row -->
+            <tr class="audit-row" (click)="toggleExpand(log.id)" [class.expanded-row]="expandedLogId === log.id">
+              <td class="text-center text-slate-400 cursor-pointer">
+                <span class="expand-icon" style="font-size: 0.75rem;">{{ expandedLogId === log.id ? '▼' : '▶' }}</span>
+              </td>
+              <td class="whitespace-nowrap font-medium">{{ formatDate(log.sysCreatedAt) }}</td>
+              <td><span class="badge badge-role">{{ log.actorRole }}</span></td>
+              <td><span class="badge badge-category">{{ log.actionCategory }}</span></td>
+              <td>{{ log.actionPerformed }}</td>
+              <td>{{ log.targetEntityType }}</td>
+            </tr>
+            <!-- Detail Row -->
+            <tr *ngIf="expandedLogId === log.id" class="audit-detail-row">
+              <td colspan="6" class="p-0 border-0">
+                <div class="audit-detail-panel">
+                  <div class="detail-grid">
+                    <div class="detail-item" *ngIf="log.schemaName">
+                      <span class="detail-label">Schema Name</span>
+                      <span class="detail-value">{{ log.schemaName }}</span>
+                    </div>
+                    <div class="detail-item" *ngIf="log.ipAddress">
+                      <span class="detail-label">IP Address</span>
+                      <span class="detail-value font-mono">{{ log.ipAddress }}</span>
+                    </div>
+                    <div class="detail-item" *ngIf="log.userAgent">
+                      <span class="detail-label">User Agent</span>
+                      <span class="detail-value">{{ log.userAgent }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="state-blocks mt-4" *ngIf="log.previousState || log.newState">
+                    <div class="state-block" *ngIf="log.previousState">
+                      <span class="detail-label mb-1 block">Previous State</span>
+                      <div class="state-content previous-state">{{ log.previousState }}</div>
+                    </div>
+                    <div class="state-block" *ngIf="log.newState">
+                      <span class="detail-label mb-1 block">New State</span>
+                      <div class="state-content new-state">{{ log.newState }}</div>
+                    </div>
+                  </div>
+                  
+                  <!-- If everything is null -->
+                  <div *ngIf="!log.schemaName && !log.ipAddress && !log.userAgent && !log.previousState && !log.newState" class="text-slate-500 italic text-sm py-2">
+                    No additional details recorded.
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && logs.length === 0 && !loadError" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <p class="empty-title">No audit logs found</p>
+    <p class="empty-sub">There is no recorded activity in the system yet.</p>
+  </div>
+
+  <div *ngIf="totalPages > 1" class="pagination">
+    <button class="page-btn" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">← Prev</button>
+    <button *ngFor="let p of pages" [class]="'page-btn ' + (p === currentPage ? 'page-active' : '')"
+      (click)="changePage(p)">{{ p + 1 }}</button>
+    <button class="page-btn" [disabled]="currentPage >= totalPages - 1" (click)="changePage(currentPage + 1)">Next
+      →</button>
+  </div>
+</div>
