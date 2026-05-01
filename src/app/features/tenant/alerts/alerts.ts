@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AlertService } from '../../../core/services/alert.service';
 import { CaseService } from '../../../core/services/case.service';
 import { TenantUserService } from '../../../core/services/tenant-user.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { TokenService } from '../../../core/auth/token';
 import { Role, TenantUserResponseDto } from '../../../core/models/user.model';
 import {
@@ -26,6 +27,7 @@ export class Alerts implements OnInit {
   private caseService = inject(CaseService);
   private tenantUserService = inject(TenantUserService);
   private tokenService = inject(TokenService);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   // ─── List State ────────────────────────────────────────────────────────────
@@ -193,21 +195,15 @@ export class Alerts implements OnInit {
     this.closingAlertId = null;
   }
 
-  handleConfirmedThreatClick(): void {
-    if (this.closingAlertId) {
-      const alertIdToAssign = this.closingAlertId;
-      this.dismissCloseModal();
-      this.selectedAlertIds.clear();
-      this.selectedAlertIds.add(alertIdToAssign);
-      this.showCreateCaseModal = true;
-    }
-  }
-
   submitClose(): void {
     if (!this.closingAlertId || this.isClosing) return;
-
     this.isClosing = true;
-    this.alertService.closeAlert(this.closingAlertId, this.closeResolution, this.closeComment).subscribe({
+    
+    // If Admin selects "Confirmed Threat", we move it to UNDER_REVIEW 
+    // so it can be bundled, rather than closing it completely.
+    const resolution = this.closeResolution === 'CLOSED_CONFIRMED' ? 'UNDER_REVIEW' : this.closeResolution;
+
+    this.alertService.closeAlert(this.closingAlertId, resolution, this.closeComment).subscribe({
       next: () => {
         this.isClosing = false;
         this.showCloseModal = false;
@@ -277,15 +273,23 @@ export class Alerts implements OnInit {
   // ─── Bundling ──────────────────────────────────────────────────────────────
 
   toggleSelection(alertId: string): void {
+    const alertItem = this.alerts.find(a => a.id === alertId);
+    if (!alertItem) return;
+
+    // Only NEW, UNDER_REVIEW, and ESCALATED alerts can be bundled.
+    // CLOSED_FALSE_POSITIVE, CLOSED_CONFIRMED, and BUNDLED_TO_CASE are excluded.
+    const bundleableStatuses: AlertStatus[] = ['NEW', 'UNDER_REVIEW', 'ESCALATED'];
+    if (!bundleableStatuses.includes(alertItem.status)) {
+      this.toast.error('Invalid operation: This alert is already closed or bundled.');
+      return;
+    }
+
     if (this.selectedAlertIds.has(alertId)) {
       this.selectedAlertIds.delete(alertId);
     } else {
-      const alertItem = this.alerts.find(a => a.id === alertId);
-      if (!alertItem) return;
-
       const currentCustomerId = this.getSelectedCustomerId();
       if (currentCustomerId && alertItem.customer?.id !== currentCustomerId) {
-        window.alert('Invalid operation: You cannot bundle alerts from different customers into a single case.');
+        this.toast.warning('Cannot bundle alerts from different customers into a single case.');
         return;
       }
       this.selectedAlertIds.add(alertId);
@@ -297,21 +301,23 @@ export class Alerts implements OnInit {
     if (event.target.checked) {
       if (this.alerts.length === 0) return;
 
-      const currentCustomerId = this.getSelectedCustomerId() || this.alerts[0].customer?.id;
+      const bundleableStatuses: AlertStatus[] = ['NEW', 'UNDER_REVIEW', 'ESCALATED'];
+      const bundleableAlerts = this.alerts.filter(a => bundleableStatuses.includes(a.status));
+      
+      if (bundleableAlerts.length === 0) {
+        this.toast.info('No bundleable alerts found on this page to select.');
+        event.target.checked = false;
+        return;
+      }
 
-      // Select only alerts matching the first customer found
-      const mismatch = this.alerts.some(a => a.customer?.id !== currentCustomerId);
-      if (mismatch && this.selectedAlertIds.size === 0) {
-        // If nothing was selected and page has mixed customers, just select the first customer's alerts
-        this.alerts.filter(a => a.customer?.id === currentCustomerId).forEach(a => this.selectedAlertIds.add(a.id));
-        window.alert('Some alerts were skipped as they belong to different customers.');
-      } else if (mismatch && this.selectedAlertIds.size > 0) {
-        // If something was already selected, only select matching ones from the page
-        this.alerts.filter(a => a.customer?.id === currentCustomerId).forEach(a => this.selectedAlertIds.add(a.id));
-        window.alert('Only alerts for the currently selected customer were added.');
-      } else {
-        // All match
-        this.alerts.forEach(a => this.selectedAlertIds.add(a.id));
+      const currentCustomerId = this.getSelectedCustomerId() || bundleableAlerts[0].customer?.id;
+
+      // Select only bundleable alerts matching the first customer found
+      const matching = bundleableAlerts.filter(a => a.customer?.id === currentCustomerId);
+      matching.forEach(a => this.selectedAlertIds.add(a.id));
+
+      if (matching.length < bundleableAlerts.length || bundleableAlerts.length < this.alerts.length) {
+        this.toast.info('Only bundleable alerts for the selected customer were added.');
       }
     } else {
       this.selectedAlertIds.clear();
@@ -354,11 +360,11 @@ export class Alerts implements OnInit {
         this.cdr.detectChanges();
         // Optional: show alert after modal is closed
         setTimeout(() => {
-          window.alert('Case created successfully');
+          this.toast.success('Case created successfully');
         }, 100);
       },
       error: (err: any) => {
-        window.alert(err?.error?.message || 'Failed to create case');
+        this.toast.error(err?.error?.message || 'Failed to create case');
         this.isCreatingCase = false;
         this.cdr.detectChanges();
       }

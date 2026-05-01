@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { TenantScenarioService } from '../../../core/services/tenant-scenario.service';
 import { TenantRuleService } from '../../../core/services/tenant-rule.service';
 import { GlobalRuleService } from '../../../core/services/global-rule.service';
+import { RuleEngineStateService } from '../../../core/services/rule-engine-state.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { TokenService } from '../../../core/auth/token';
 import { 
   TenantScenarioWithRulesDto, 
@@ -32,6 +34,8 @@ export class RuleEngine implements OnInit {
   private tenantRuleService = inject(TenantRuleService);
   private globalRuleService = inject(GlobalRuleService);
   private tokenService = inject(TokenService);
+  private stateService = inject(RuleEngineStateService);
+  private toast = inject(ToastService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
@@ -57,16 +61,27 @@ export class RuleEngine implements OnInit {
   showThresholdModal = false;
   thresholdForm: FormGroup;
 
-  // ─── Execution State ─────────────────────────────────────────────────────────
-  executionMode: 'LIVE' | 'FORENSIC' = 'LIVE';
-  execStartDate = '';
-  execEndDate = '';
-  isExecuting = false;
-  
-  // Updated to accept both single and batch summaries
-  executionResult: ScenarioExecutionSummary | BatchScenarioExecutionSummary | null = null; 
-  executionError: string | null = null;
-  showExecutionPanel = false;
+  // ─── Execution State (Proxied to Service) ──────────────────────────────────
+  get executionMode() { return this.stateService.executionMode(); }
+  set executionMode(val: 'LIVE' | 'FORENSIC') { this.stateService.executionMode.set(val); }
+
+  get execStartDate() { return this.stateService.execStartDate(); }
+  set execStartDate(val: string) { this.stateService.execStartDate.set(val); }
+
+  get execEndDate() { return this.stateService.execEndDate(); }
+  set execEndDate(val: string) { this.stateService.execEndDate.set(val); }
+
+  get isExecuting() { return this.stateService.isExecuting(); }
+  set isExecuting(val: boolean) { this.stateService.isExecuting.set(val); }
+
+  get executionResult() { return this.stateService.executionResult(); }
+  set executionResult(val: ScenarioExecutionSummary | BatchScenarioExecutionSummary | null) { this.stateService.executionResult.set(val); }
+
+  get executionError() { return this.stateService.executionError(); }
+  set executionError(val: string | null) { this.stateService.executionError.set(val); }
+
+  get showExecutionPanel() { return this.stateService.showExecutionPanel(); }
+  set showExecutionPanel(val: boolean) { this.stateService.showExecutionPanel.set(val); }
 
   constructor() {
     this.thresholdForm = this.fb.group({
@@ -133,7 +148,7 @@ export class RuleEngine implements OnInit {
       this.tenantScenarioService.activateScenario(globalId)
         .subscribe({
           next: () => {
-            alert('Scenario activated successfully');
+            this.toast.success('Scenario activated successfully');
             this.setTab('MY_SCENARIOS');
           },
           error: (err) => {
@@ -257,7 +272,7 @@ export class RuleEngine implements OnInit {
 
     if (!rule.id || !rule.globalRuleId) {
       console.error('Incomplete rule data:', rule);
-      alert('Error: Rule IDs are missing. Cannot fetch conditions.');
+      this.toast.error('Error: Rule IDs are missing. Cannot fetch conditions.');
       this.loading = false;
       return;
     }
@@ -301,7 +316,7 @@ export class RuleEngine implements OnInit {
         let msg = 'Failed to load rule condition metadata.';
         if (err.status === 403) msg += ' (Access Denied: Check permissions)';
         if (err.status === 404) msg += ' (Global rule or thresholds not found)';
-        alert(msg + ' Please try again or contact support.');
+        this.toast.error(msg + ' Please try again or contact support.');
       }
     });
   }
@@ -328,7 +343,7 @@ export class RuleEngine implements OnInit {
           return {
             tenantRuleCode: this.selectedRule!.ruleCode,
             globalConditionCode: cond.conditionCode,
-            globalConditionId: cond.id, // Pass UUID to avoid backend lookup errors
+            globalConditionId: cond.id, 
             overrideValue: pending.value || null,
             overrideLookbackPeriod: pending.lookback || null
           };
@@ -345,15 +360,13 @@ export class RuleEngine implements OnInit {
       }))
       .subscribe({
         next: (res) => {
-          alert('Threshold overrides saved successfully!');
+          this.toast.success('Threshold overrides saved successfully!');
           this.closeThresholdModal();
-          // Optional: Refresh scenarios to reflect changes if needed
-          // this.loadMyScenarios();
         },
         error: (err) => {
           console.error('Error saving thresholds:', err);
           const errorMsg = err?.error?.message || 'Failed to save overrides. Please check backend logs.';
-          alert(errorMsg);
+          this.toast.error(errorMsg);
         }
       });
   }

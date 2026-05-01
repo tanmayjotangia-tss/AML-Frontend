@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TenantResponseDto } from '../../../../../core/models/tenant.model';
 import { TenantService } from '../../../../../core/services/tenant.service';
+import { ToastService } from '../../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-tenant-detail',
@@ -12,6 +13,7 @@ import { TenantService } from '../../../../../core/services/tenant.service';
 })
 export class TenantDetailComponent {
   private tenantService = inject(TenantService);
+  private toast = inject(ToastService);
 
   @Input() tenant!: TenantResponseDto;
   @Output() close = new EventEmitter<void>();
@@ -57,7 +59,7 @@ export class TenantDetailComponent {
     this.tenantService.resetAdminCredentials(this.tenant.id).subscribe({
       next: () => {
         this.isProcessing = false;
-        window.alert('Admin credentials have been reset and sent to the contact email.');
+        this.toast.success('Admin credentials have been reset and sent to the contact email.');
       },
       error: () => {
         this.isProcessing = false;

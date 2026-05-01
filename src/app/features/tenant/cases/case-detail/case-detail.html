@@ -22,13 +22,11 @@
               (click)="showReassignModal = true">Reassign</button>
               
       <button class="btn-action btn-escalate" 
-              *ngIf="!isBankAdmin && !isClosed"
-              [disabled]="!canPerformAction" 
-              [title]="getActionTooltip()" 
+              *ngIf="canEscalate"
               (click)="showEscalateModal = true">Escalate</button>
               
       <button class="btn-action btn-close-case" 
-              *ngIf="!isBankAdmin && !isClosed"
+              *ngIf="!isClosed && (!isBankAdmin || canPerformAction)" 
               [disabled]="!canPerformAction || !hasNotes" 
               [title]="getActionTooltip()" 
               (click)="showCloseModal = true">Close Case</button>
@@ -146,7 +144,7 @@
           <span class="req-icon">✓</span> Note requirement met — case can be closed.
         </div>
         
-        <div class="add-note" *ngIf="!isBankAdmin && !isClosed">
+        <div class="add-note" *ngIf="!isClosed && (!isBankAdmin || canPerformAction)">
           <select [(ngModel)]="newNoteType" class="note-type-select">
             <option value="OBSERVATION">Observation</option>
             <option value="EVIDENCE">Evidence</option>

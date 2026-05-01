@@ -4,6 +4,7 @@ import { TenantService } from '../../../core/services/tenant.service';
 import { TenantResponseDto } from '../../../core/models/tenant.model';
 import { TenantFormComponent } from './components/tenant-form/tenant-form.component';
 import { TenantDetailComponent } from './components/tenant-detail/tenant-detail.component';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-tenants',
@@ -14,6 +15,7 @@ import { TenantDetailComponent } from './components/tenant-detail/tenant-detail.
 })
 export class Tenants implements OnInit {
   private tenantService = inject(TenantService);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   tenants: TenantResponseDto[] = [];
@@ -99,10 +101,10 @@ export class Tenants implements OnInit {
 
     this.tenantService.resetAdminCredentials(tenant.id).subscribe({
       next: () => {
-        window.alert('Admin credentials have been reset and sent to the contact email.');
+        this.toast.success('Admin credentials have been reset and sent to the contact email.');
       },
       error: (err) => {
-        window.alert(err.error?.message || 'Failed to reset credentials.');
+        this.toast.error(err.error?.message || 'Failed to reset credentials.');
       }
     });
   }
