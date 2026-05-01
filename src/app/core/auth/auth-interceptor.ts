@@ -3,12 +3,14 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { TokenService } from './token';
+import { ToastService } from '../services/toast.service';
 
 let isAlertShowing = false;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenService = inject(TokenService);
   const router = inject(Router);
+  const toast = inject(ToastService);
   
   const token = tokenService.getAccessToken();
   const tenantId = tokenService.getTenantId();
@@ -36,7 +38,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         console.warn('Session expired or revoked. Forcing logout.');
         
         // Show alert as requested by the user
-        alert('Your session has expired. Please log in again.');
+        toast.error('Your session has expired. Please log in again.');
         
         const role = tokenService.getRole();
         tokenService.clear();

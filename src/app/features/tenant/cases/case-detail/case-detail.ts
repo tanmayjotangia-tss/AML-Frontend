@@ -19,6 +19,7 @@ import { StrFilingResponseDto } from '../../../../core/models/str-filing.model';
 import { Role, TenantUserResponseDto } from '../../../../core/models/user.model';
 
 import { TokenService } from '../../../../core/auth/token';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-case-detail',
@@ -35,6 +36,7 @@ export class CaseDetail implements OnInit {
   private alertService = inject(AlertService);
   private tenantUserService = inject(TenantUserService);
   private tokenService = inject(TokenService);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   caseRef: string | null = null;
@@ -49,18 +51,22 @@ export class CaseDetail implements OnInit {
 
   get canPerformAction(): boolean {
     if (!this.caseData) return false;
-    const userRole = this.tokenService.getRole();
     const status = this.caseData.status;
 
-    // Cannot perform actions on closed cases
     if (status.startsWith('CLOSED')) return false;
     
-    // Bank Admin is read-only for investigation actions
-    if (userRole === Role.BANK_ADMIN) return false;
-    
-    // Compliance Officer can only act if they are the assignee
     const isAssignee = this.caseData.assignedTo === this.userId || this.caseData.assignedTo === this.userCode;
     return isAssignee;
+  }
+
+  get canEscalate(): boolean {
+    if (!this.caseData || this.isClosed) return false;
+    
+    // Cannot escalate an already escalated case
+    if (this.caseData.status === 'ESCALATED') return false;
+    
+    // Authority to escalate is tied to being the assignee
+    return this.canPerformAction;
   }
 
   get canReassign(): boolean {
@@ -68,15 +74,15 @@ export class CaseDetail implements OnInit {
     const userRole = this.tokenService.getRole();
     const status = this.caseData.status;
 
-    // No reassignment for closed cases
-    if (status.startsWith('CLOSED')) return false;
+    // No reassignment if closed or escalated
+    if (status.startsWith('CLOSED') || status === 'ESCALATED') return false;
 
-    // Admin can reassign if case is OPEN
+    // Admin can reassign if case is OPEN (unassigned)
     if (userRole === Role.BANK_ADMIN || userRole === Role.SUPER_ADMIN) {
-      return status === 'OPEN';
+      if (status === 'OPEN') return true;
     }
 
-    // Assignee can always reassign (delegate) as long as it's not closed
+    // Current assignee can always reassign/delegate
     const isAssignee = this.caseData.assignedTo === this.userId || this.caseData.assignedTo === this.userCode;
     return isAssignee;
   }
@@ -284,11 +290,13 @@ export class CaseDetail implements OnInit {
         this.newNoteContent = '';
         this.isAddingNote = false;
         if (this.caseData) this.caseData.hasInvestigationNote = true;
+        this.toast.success('Note added successfully');
         this.loadAuditTrail(this.caseData!.id); 
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.isAddingNote = false;
+        this.toast.error(err?.error?.message || 'Failed to add note');
         this.cdr.detectChanges();
       }
     });
@@ -306,9 +314,14 @@ export class CaseDetail implements OnInit {
       next: () => {
         this.isReassigning = false;
         this.showReassignModal = false;
+        this.toast.success('Case reassigned successfully');
         this.loadCaseDetails();
       },
-      error: () => { this.isReassigning = false; this.cdr.detectChanges(); }
+      error: (err) => { 
+        this.isReassigning = false; 
+        this.toast.error(err?.error?.message || 'Failed to reassign case');
+        this.cdr.detectChanges(); 
+      }
     });
   }
 
@@ -322,9 +335,14 @@ export class CaseDetail implements OnInit {
       next: () => {
         this.isEscalating = false;
         this.showEscalateModal = false;
+        this.toast.success('Case escalated successfully');
         this.loadCaseDetails();
       },
-      error: () => { this.isEscalating = false; this.cdr.detectChanges(); }
+      error: (err) => { 
+        this.isEscalating = false; 
+        this.toast.error(err?.error?.message || 'Failed to escalate case');
+        this.cdr.detectChanges(); 
+      }
     });
   }
 
@@ -338,9 +356,14 @@ export class CaseDetail implements OnInit {
         next: () => {
           this.isClosing = false;
           this.showCloseModal = false;
+          this.toast.success('Case closed as False Positive');
           this.loadCaseDetails();
         },
-        error: () => { this.isClosing = false; this.cdr.detectChanges(); }
+        error: (err) => { 
+          this.isClosing = false; 
+          this.toast.error(err?.error?.message || 'Failed to close case');
+          this.cdr.detectChanges(); 
+        }
       });
     } else {
       this.submitStrFiling();

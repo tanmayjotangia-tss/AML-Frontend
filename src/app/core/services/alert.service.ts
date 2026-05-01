@@ -22,7 +22,8 @@ export class AlertService {
     from?: string,
     to?: string,
     page = 0,
-    size = 15
+    size = 15,
+    customer?: string
   ): Observable<ApiResponse<Page<AlertResponseDto>>> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -32,6 +33,7 @@ export class AlertService {
     if (status)    params = params.set('status', status);
     if (from)      params = params.set('from', from);
     if (to)        params = params.set('to', to);
+    if (customer)  params = params.set('customer', customer);
     return this.http.get<ApiResponse<Page<AlertResponseDto>>>(this.BASE, { params });
   }
 

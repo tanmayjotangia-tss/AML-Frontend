@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TenantUserService } from '../../../core/services/tenant-user.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { TenantUserResponseDto, Role, CreateTenantUserRequestDto, UpdateTenantUserRequestDto } from '../../../core/models/user.model';
 import { Page } from '../../../core/models/tenant.model';
 import { finalize } from 'rxjs';
@@ -15,6 +16,7 @@ import { finalize } from 'rxjs';
 })
 export class Users implements OnInit {
   private userService = inject(TenantUserService);
+  private toast = inject(ToastService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
@@ -110,14 +112,14 @@ export class Users implements OnInit {
     request$.subscribe({
       next: () => {
         const message = this.isEditing ? 'User updated successfully' : 'User created successfully and onboarding email sent';
-        alert(message);
+        this.toast.success(message);
         this.closeModal();
         this.loadUsers(0);
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error saving user:', err);
-        alert('Failed to save user. Please try again.');
+        this.toast.error('Failed to save user. Please try again.');
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -130,13 +132,13 @@ export class Users implements OnInit {
       this.userService.deactivateUser(id)
         .subscribe({
           next: () => {
-            alert('User deactivated successfully');
+            this.toast.success('User deactivated successfully');
             this.loadUsers(this.usersPage?.number);
             this.cdr.detectChanges();
           },
           error: (err) => {
             console.error('Error deactivating user:', err);
-            alert('Failed to deactivate user.');
+            this.toast.error('Failed to deactivate user.');
             this.loading = false;
             this.cdr.detectChanges();
           }
@@ -149,13 +151,13 @@ export class Users implements OnInit {
       this.loading = true;
       this.userService.resetPassword(id).subscribe({
         next: () => {
-          alert('Password reset successfully. A new temporary password has been emailed to the user.');
+          this.toast.success('Password reset successfully. A new temporary password has been emailed.');
           this.loading = false;
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error resetting password:', err);
-          alert('Failed to reset password.');
+          this.toast.error('Failed to reset password.');
           this.loading = false;
           this.cdr.detectChanges();
         }
@@ -168,13 +170,13 @@ export class Users implements OnInit {
       this.loading = true;
       this.userService.unlockUser(id).subscribe({
         next: () => {
-          alert('User account unlocked successfully');
+          this.toast.success('User account unlocked successfully');
           this.loadUsers(this.usersPage?.number);
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error unlocking user:', err);
-          alert('Failed to unlock user.');
+          this.toast.error('Failed to unlock user.');
           this.loading = false;
           this.cdr.detectChanges();
         }
