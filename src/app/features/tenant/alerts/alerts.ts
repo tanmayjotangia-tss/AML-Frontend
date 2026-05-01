@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlertService } from '../../../core/services/alert.service';
 import { CaseService } from '../../../core/services/case.service';
+import { TenantUserService } from '../../../core/services/tenant-user.service';
 import { TokenService } from '../../../core/auth/token';
+import { Role, TenantUserResponseDto } from '../../../core/models/user.model';
 import {
   AlertResponseDto,
   AlertDetailResponseDto,
@@ -22,6 +24,7 @@ import {
 export class Alerts implements OnInit {
   private alertService = inject(AlertService);
   private caseService = inject(CaseService);
+  private tenantUserService = inject(TenantUserService);
   private tokenService = inject(TokenService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -35,6 +38,7 @@ export class Alerts implements OnInit {
   filterStatus: AlertStatus | '' = '';
   filterFrom = '';
   filterTo = '';
+  filterCustomer = '';
 
   // ─── Pagination ────────────────────────────────────────────────────────────
   currentPage = 0;
@@ -52,6 +56,7 @@ export class Alerts implements OnInit {
   showCreateCaseModal = false;
   casePriority = 'MEDIUM';
   caseAssignee = ''; // employee ID
+  availableAssignees: TenantUserResponseDto[] = [];
   isCreatingCase = false;
 
   // ─── Detail Modal ──────────────────────────────────────────────────────────
@@ -69,6 +74,7 @@ export class Alerts implements OnInit {
     this.caseAssignee = this.tokenService.getUsername() || '';
     this.loadAlerts();
     this.loadSeverityCounts();
+    this.loadAvailableAssignees();
   }
 
   // ─── Data Loading ───────────────────────────────────────────────────────────
@@ -82,7 +88,8 @@ export class Alerts implements OnInit {
       this.filterFrom || undefined,
       this.filterTo || undefined,
       this.currentPage,
-      this.pageSize
+      this.pageSize,
+      this.filterCustomer || undefined
     ).subscribe({
       next: (res) => {
         this.alerts = res.data?.content || [];
@@ -109,6 +116,19 @@ export class Alerts implements OnInit {
     });
   }
 
+  loadAvailableAssignees(): void {
+    this.tenantUserService.listUsers(undefined, 0, 100).subscribe({
+      next: (res) => {
+        // Exclude BANK_ADMIN as per user request
+        this.availableAssignees = res.data?.content.filter(u => 
+          u.role !== Role.BANK_ADMIN
+        ) || [];
+        this.cdr.detectChanges();
+      },
+      error: () => { }
+    });
+  }
+
   // ─── Filter / Pagination ───────────────────────────────────────────────────
 
   applyFilters(): void {
@@ -121,6 +141,7 @@ export class Alerts implements OnInit {
     this.filterStatus = '';
     this.filterFrom = '';
     this.filterTo = '';
+    this.filterCustomer = '';
     this.currentPage = 0;
     this.loadAlerts();
   }
@@ -315,12 +336,15 @@ export class Alerts implements OnInit {
 
     this.caseService.createCase(dto).subscribe({
       next: () => {
-        window.alert('Case created successfully');
         this.isCreatingCase = false;
         this.showCreateCaseModal = false;
         this.selectedAlertIds.clear();
         this.loadAlerts();
         this.cdr.detectChanges();
+        // Optional: show alert after modal is closed
+        setTimeout(() => {
+          window.alert('Case created successfully');
+        }, 100);
       },
       error: (err: any) => {
         window.alert(err?.error?.message || 'Failed to create case');

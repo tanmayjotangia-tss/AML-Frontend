@@ -58,6 +58,10 @@
   <div class="filter-bar">
     <div class="filter-row">
       <div class="filter-group">
+        <label class="filter-label">Customer Search</label>
+        <input type="text" [(ngModel)]="filterCustomer" class="filter-input" placeholder="Name or Account..." (keyup.enter)="applyFilters()" />
+      </div>
+      <div class="filter-group">
         <label class="filter-label">Severity</label>
         <select [(ngModel)]="filterSeverity" class="filter-select">
           <option value="">All Severities</option>
@@ -370,8 +374,13 @@
     <div class="modal-body">
       <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
-          <label class="filter-label">Assignee (Employee ID)</label>
-          <input type="text" [(ngModel)]="caseAssignee" class="filter-input" placeholder="e.g. EMP-101" />
+          <label class="filter-label">Assignee</label>
+          <select [(ngModel)]="caseAssignee" class="filter-select">
+            <option value="">Select Assignee...</option>
+            <option *ngFor="let user of availableAssignees" [value]="user.employeeId">
+              {{ user.fullName }} ({{ user.employeeId }})
+            </option>
+          </select>
         </div>
         <div class="form-group">
           <label class="filter-label">Priority</label>
