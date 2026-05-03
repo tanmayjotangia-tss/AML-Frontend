@@ -43,7 +43,6 @@ export interface AlertResponseDto {
   sysUpdatedAt?: string;
 }
 
-// ─── Evidence ─────────────────────────────────────────────────────────────────
 
 export interface AlertEvidenceResponseDto {
   id: string;
@@ -56,7 +55,6 @@ export interface AlertEvidenceResponseDto {
   sysCreatedAt?: string;
 }
 
-// ─── Linked Transactions ──────────────────────────────────────────────────────
 
 export interface AlertTransactionSummaryDto {
   transactionId: string;
@@ -68,7 +66,6 @@ export interface AlertTransactionSummaryDto {
   role?: InvolvementRole;
 }
 
-// ─── Detail Response ──────────────────────────────────────────────────────────
 
 export interface AlertDetailResponseDto {
   alert: AlertResponseDto;
@@ -76,11 +73,10 @@ export interface AlertDetailResponseDto {
   linkedTransactions: AlertTransactionSummaryDto[];
 }
 
-// ─── Severity Counts ─────────────────────────────────────────────────────────
 
 export type SeverityCounts = Record<AlertSeverity, number>;
 
-// ─── Filter State ─────────────────────────────────────────────────────────────
+
 
 export interface AlertFilterState {
   severity?: AlertSeverity | '';

@@ -19,7 +19,6 @@ export class PlatformDashboardService {
   private readonly API_URL = '/api/v1/platform/dashboard';
 
   getDashboardDetails(): Observable<ApiResponse<PlatformDashboardResponseDto>> {
-    // Directly use aggregation until the backend endpoint is implemented to avoid backend logs noise
     return this.getAggregatedDashboardData();
   }
 

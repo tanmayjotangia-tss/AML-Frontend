@@ -21,7 +21,6 @@ export class ToastService {
     const id = this.counter++;
     const toast: ToastMessage = { id, type, message, duration };
     
-    // Wrap in setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
       this.toasts.update(current => [...current, toast]);
     });

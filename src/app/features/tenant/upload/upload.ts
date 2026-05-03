@@ -84,14 +84,62 @@ export class Upload implements OnInit {
     if (input.files?.length) this.setFile(input.files[0]);
   }
 
+  // Validation constants
+  private readonly REQUIRED_HEADERS: Record<BatchFileType, string[]> = {
+    TRANSACTION: [
+      'transactionRef', 'originatorAccountNo', 'originatorName', 'originatorBankCode', 'originatorCountry',
+      'beneficiaryAccountNo', 'beneficiaryName', 'beneficiaryBankCode', 'beneficiaryCountry',
+      'amount', 'currencyCode', 'transactionType', 'channel', 'transactionTimestamp', 'referenceNote', 'status'
+    ],
+    CUSTOMER_PROFILE: [
+      'accountNumber', 'customerName', 'customerType', 'idType', 'idNumber', 'nationality',
+      'countryOfResidence', 'monthlyIncome', 'netWorth', 'riskRating', 'riskScore',
+      'isPep', 'isDormant', 'accountOpenedOn', 'lastActivityDate', 'kycStatus'
+    ]
+  };
+
   private setFile(file: File): void {
     if (!file.name.endsWith('.csv')) {
       this.uploadError = 'Only CSV files are accepted.';
       return;
     }
-    this.selectedFile = file;
-    this.uploadError = null;
-    this.uploadSuccess = null;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      const firstLine = content.split('\n')[0]?.trim();
+      
+      if (!firstLine) {
+        this.uploadError = 'The file appears to be empty.';
+        this.selectedFile = null;
+        this.cdr.detectChanges();
+        return;
+      }
+
+      const headers = firstLine.split(',').map(h => h.trim());
+      const required = this.REQUIRED_HEADERS[this.selectedFileType];
+      
+      // Case-insensitive comparison for better UX, but matching the exact strings provided
+      const missing = required.filter(req => !headers.some(h => h.toLowerCase() === req.toLowerCase()));
+
+      if (missing.length > 0) {
+        this.uploadError = `Invalid CSV headers for ${this.selectedFileType.replace('_', ' ')}. Missing: ${missing.join(', ')}`;
+        this.selectedFile = null;
+      } else {
+        this.selectedFile = file;
+        this.uploadError = null;
+        this.uploadSuccess = null;
+      }
+      this.cdr.detectChanges();
+    };
+    reader.readAsText(file);
+  }
+
+  onFileTypeChange(): void {
+    if (this.selectedFile) {
+      // Re-validate existing file with new type
+      this.setFile(this.selectedFile);
+    }
   }
 
   clearFile(): void {

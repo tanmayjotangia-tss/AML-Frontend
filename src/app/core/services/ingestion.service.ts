@@ -13,9 +13,6 @@ export class IngestionService {
   private http = inject(HttpClient);
   private readonly BASE_URL = '/api/v1/ingestion';
 
-  /**
-   * Upload a CSV file for customer profiles or transactions.
-   */
   uploadBatchFile(file: File, fileType: BatchFileType): Observable<ApiResponse<TransactionBatchResponseDto>> {
     const formData = new FormData();
     formData.append('file', file, file.name);
@@ -25,18 +22,13 @@ export class IngestionService {
     );
   }
 
-  /**
-   * Get the processing status of a specific batch.
-   */
+
   getBatchStatus(batchId: string): Observable<ApiResponse<TransactionBatchResponseDto>> {
     return this.http.get<ApiResponse<TransactionBatchResponseDto>>(
       `${this.BASE_URL}/batches/${batchId}`
     );
   }
 
-  /**
-   * List all batches (paginated), optionally filtered by file type.
-   */
   getAllBatches(
     fileType?: BatchFileType,
     page: number = 0,
