@@ -73,7 +73,6 @@ export interface AlertDetailResponseDto {
 
 export type SeverityCounts = Record<AlertSeverity, number>;
 
-
 export interface AlertFilterState {
   severity?: AlertSeverity | '';
   status?: AlertStatus | '';

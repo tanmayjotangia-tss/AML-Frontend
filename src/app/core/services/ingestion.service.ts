@@ -22,6 +22,7 @@ export class IngestionService {
     );
   }
 
+
   getBatchStatus(batchId: string): Observable<ApiResponse<TransactionBatchResponseDto>> {
     return this.http.get<ApiResponse<TransactionBatchResponseDto>>(
       `${this.BASE_URL}/batches/${batchId}`

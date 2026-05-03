@@ -47,8 +47,8 @@
         <h2 class="section-title">1. Select File Type</h2>
 
         <div class="file-type-selector">
-          <label [class]="'type-option ' + (selectedFileType === 'CUSTOMER_PROFILE' ? 'type-selected' : '')" (click)="selectedFileType = 'CUSTOMER_PROFILE'">
-            <input type="radio" name="fileType" value="CUSTOMER_PROFILE" [(ngModel)]="selectedFileType" class="sr-only"/>
+          <label [class]="'type-option ' + (selectedFileType === 'CUSTOMER_PROFILE' ? 'type-selected' : '')" (click)="selectedFileType = 'CUSTOMER_PROFILE'; onFileTypeChange()">
+            <input type="radio" name="fileType" value="CUSTOMER_PROFILE" [(ngModel)]="selectedFileType" (change)="onFileTypeChange()" class="sr-only"/>
             <div class="type-icon-wrap type-customer">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="type-icon">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -61,8 +61,8 @@
             </div>
           </label>
 
-          <label [class]="'type-option ' + (selectedFileType === 'TRANSACTION' ? 'type-selected' : '')" (click)="selectedFileType = 'TRANSACTION'">
-            <input type="radio" name="fileType" value="TRANSACTION" [(ngModel)]="selectedFileType" class="sr-only"/>
+          <label [class]="'type-option ' + (selectedFileType === 'TRANSACTION' ? 'type-selected' : '')" (click)="selectedFileType = 'TRANSACTION'; onFileTypeChange()">
+            <input type="radio" name="fileType" value="TRANSACTION" [(ngModel)]="selectedFileType" (change)="onFileTypeChange()" class="sr-only"/>
             <div class="type-icon-wrap type-transaction">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="type-icon">
                 <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -189,6 +189,19 @@
               <span>{{ uploadSuccess.batchStatus === 'RUNNING' ? 'Processing records...' : 'Waiting in queue...' }}</span>
             </div>
           </div>
+
+          <!-- Direct failure feedback -->
+          <div *ngIf="uploadSuccess.batchStatus === 'FAILED' || uploadSuccess.batchStatus === 'PARTIAL'" class="failure-alert-mini">
+            <div class="failure-alert-header">
+              <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              <span>Processing Error</span>
+            </div>
+            <div class="failure-alert-body" *ngIf="uploadSuccess.failureDetails">
+              {{ parseFailureDetails(uploadSuccess.failureDetails) }}
+            </div>
+          </div>
         </div>
 
         <!-- CSV Format Guidelines -->
@@ -203,40 +216,44 @@
           <div *ngIf="selectedFileType === 'CUSTOMER_PROFILE'" class="guidelines-content">
             <p class="guide-sub">Required columns for <strong>Customer Profile</strong>:</p>
             <div class="col-list">
-              <span class="col-tag required">account_number</span>
-              <span class="col-tag required">customer_name</span>
-              <span class="col-tag required">customer_type</span>
-              <span class="col-tag required">account_opened_on</span>
-              <span class="col-tag required">risk_rating</span>
+              <span class="col-tag required">accountNumber</span>
+              <span class="col-tag required">customerName</span>
+              <span class="col-tag required">customerType</span>
+              <span class="col-tag required">riskRating</span>
+              <span class="col-tag required">accountOpenedOn</span>
+              <span class="col-tag">idType</span>
+              <span class="col-tag">idNumber</span>
               <span class="col-tag">nationality</span>
-              <span class="col-tag">country_of_residence</span>
-              <span class="col-tag">id_type</span>
-              <span class="col-tag">id_number</span>
-              <span class="col-tag">monthly_income</span>
-              <span class="col-tag">net_worth</span>
-              <span class="col-tag">is_pep</span>
-              <span class="col-tag">kyc_status</span>
+              <span class="col-tag">countryOfResidence</span>
+              <span class="col-tag">monthlyIncome</span>
+              <span class="col-tag">netWorth</span>
+              <span class="col-tag">riskScore</span>
+              <span class="col-tag">isPep</span>
+              <span class="col-tag">isDormant</span>
+              <span class="col-tag">lastActivityDate</span>
+              <span class="col-tag">kycStatus</span>
             </div>
-            <p class="guide-enum">customer_type: INDIVIDUAL, CORPORATE, JOINT, TRUST</p>
-            <p class="guide-enum">kyc_status: PENDING, VERIFIED, REJECTED, EXPIRED</p>
+            <p class="guide-enum">customerType: INDIVIDUAL, CORPORATE, JOINT, TRUST</p>
+            <p class="guide-enum">kycStatus: PENDING, VERIFIED, REJECTED, EXPIRED</p>
           </div>
 
           <div *ngIf="selectedFileType === 'TRANSACTION'" class="guidelines-content">
             <p class="guide-sub">Required columns for <strong>Transaction</strong>:</p>
             <div class="col-list">
-              <span class="col-tag required">transaction_ref</span>
+              <span class="col-tag required">transactionRef</span>
               <span class="col-tag required">amount</span>
-              <span class="col-tag required">currency_code</span>
-              <span class="col-tag required">transaction_type</span>
+              <span class="col-tag required">currencyCode</span>
+              <span class="col-tag required">transactionType</span>
               <span class="col-tag required">channel</span>
-              <span class="col-tag required">transaction_timestamp</span>
-              <span class="col-tag">originator_account_no</span>
-              <span class="col-tag">originator_name</span>
-              <span class="col-tag">beneficiary_account_no</span>
-              <span class="col-tag">beneficiary_name</span>
-              <span class="col-tag">reference_note</span>
+              <span class="col-tag required">transactionTimestamp</span>
+              <span class="col-tag">originatorAccountNo</span>
+              <span class="col-tag">originatorName</span>
+              <span class="col-tag">beneficiaryAccountNo</span>
+              <span class="col-tag">beneficiaryName</span>
+              <span class="col-tag">referenceNote</span>
+              <span class="col-tag">status</span>
             </div>
-            <p class="guide-enum">transaction_type: CREDIT, DEBIT, TRANSFER, PAYMENT, WITHDRAWAL, DEPOSIT</p>
+            <p class="guide-enum">transactionType: CREDIT, DEBIT, TRANSFER, PAYMENT, WITHDRAWAL, DEPOSIT</p>
             <p class="guide-enum">channel: BRANCH, ATM, ONLINE, MOBILE, POS, SWIFT</p>
           </div>
         </div>

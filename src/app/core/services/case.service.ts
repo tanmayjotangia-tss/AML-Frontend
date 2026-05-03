@@ -51,9 +51,11 @@ export class CaseService {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/${caseId}/close/str`, dto, { params });
   }
 
+
   escalateCase(caseRef: string, dto: EscalationRequestDto): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/${caseRef}/escalate`, dto);
   }
+
 
   openCaseInvestigation(caseId: string, actorId: string): Observable<ApiResponse<void>> {
     const params = new HttpParams().set('actorId', actorId);
