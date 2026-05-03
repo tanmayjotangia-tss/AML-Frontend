@@ -1,4 +1,3 @@
-// ─── Enums ───────────────────────────────────────────────────────────────────
 
 export type BatchFileType = 'CUSTOMER_PROFILE' | 'TRANSACTION';
 
@@ -13,8 +12,6 @@ export type TransactionType = 'CREDIT' | 'DEBIT' | 'TRANSFER' | 'PAYMENT' | 'WIT
 export type Channel = 'BRANCH' | 'ATM' | 'ONLINE' | 'MOBILE' | 'POS' | 'SWIFT';
 
 export type TransactionStatus = 'CLEAN' | 'FLAGGED' | 'SUSPICIOUS' | 'BLOCKED';
-
-// ─── Batch DTOs ───────────────────────────────────────────────────────────────
 
 export interface TransactionBatchResponseDto {
   id: string;
@@ -34,7 +31,6 @@ export interface TransactionBatchResponseDto {
   sysUpdatedAt?: string;
 }
 
-// ─── Customer Profile DTOs ────────────────────────────────────────────────────
 
 export interface CustomerProfileResponseDto {
   id: string;
@@ -52,8 +48,6 @@ export interface CustomerProfileResponseDto {
   kycStatus: KycStatus;
   kycDocumentUrl?: string;
 }
-
-// ─── Transaction DTOs ─────────────────────────────────────────────────────────
 
 export interface TransactionResponseDto {
   id: string;
@@ -86,8 +80,6 @@ export interface TransactionSummaryDto {
   txnDate: string;
   txnType: string;
 }
-
-// ─── Upload Result ────────────────────────────────────────────────────────────
 
 export interface BatchUploadResult {
   batch: TransactionBatchResponseDto;

@@ -34,10 +34,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !isAlertShowing) {
         isAlertShowing = true;
-        // The token has expired or has been blacklisted
         console.warn('Session expired or revoked. Forcing logout.');
         
-        // Show alert as requested by the user
         toast.error('Your session has expired. Please log in again.');
         
         const role = tokenService.getRole();

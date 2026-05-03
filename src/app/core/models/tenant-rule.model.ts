@@ -72,7 +72,6 @@ export interface GlobalScenarioResponseDto {
   sysUpdatedAt?: string;
 }
 
-// ─── Scenario Execution ───────────────────────────────────────────────────────
 
 export interface ScenarioExecutionRequestDto {
   globalLookbackStart?: string; // ISO-8601 timestamp (FORENSIC mode)

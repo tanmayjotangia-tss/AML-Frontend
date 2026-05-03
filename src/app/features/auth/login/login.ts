@@ -89,8 +89,7 @@ export class Login implements OnInit {
         }
       },
       error: (err) => {
-        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
-        // This ensures the state update happens in the next tick
+
         setTimeout(() => {
           this.isSubmitting = false;
           this.loginError = err.error?.message || 'Authentication failed. Please check your credentials.';
@@ -114,7 +113,6 @@ export class Login implements OnInit {
     this.authService.changePassword(req).subscribe({
       next: () => {
         this.isSubmitting = false;
-        // After successful password change, route the user based on role 
         const role = localStorage.getItem('user_role'); 
         this.routeUser(role || '');
       },

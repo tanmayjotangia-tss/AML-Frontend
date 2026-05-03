@@ -1,7 +1,7 @@
 export interface LoginRequestDto {
   email: string;
   password: string;
-  tenantCode?: string; 
+  tenantCode?: string;
 }
 
 export interface LoginResponseDto {

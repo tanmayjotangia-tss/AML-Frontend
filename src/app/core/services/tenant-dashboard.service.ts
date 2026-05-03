@@ -41,15 +41,12 @@ export class TenantDashboardService {
           systemHealth: 'Healthy'
         };
 
-        // Build User Map
         const userMap = new Map<string, { name: string, empId: string }>();
         userList.forEach(u => {
-          // Key by both username/employeeId and ID to be safe
           userMap.set(u.employeeId, { name: u.fullName, empId: u.employeeId });
           userMap.set(u.id, { name: u.fullName, empId: u.employeeId });
         });
 
-        // Calculate User Workload
         const workloadMap = new Map<string, number>();
         cases.forEach(c => {
           if (c.assignedTo) {

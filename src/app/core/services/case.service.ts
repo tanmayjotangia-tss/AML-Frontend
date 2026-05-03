@@ -22,7 +22,6 @@ export class CaseService {
   private readonly API_URL = '/api/v1/cases';
   private readonly INVESTIGATION_URL = '/api/v1/cases/investigation';
 
-  // ─── Case Assignment ─────────────────────────────────────────────────────────
 
   getCases(page: number = 0, size: number = 20): Observable<ApiResponse<{ content: CaseResponseDto[], totalElements: number, totalPages: number }>> {
     const params = new HttpParams().set('page', page).set('size', size);
@@ -41,7 +40,6 @@ export class CaseService {
     return this.http.patch<ApiResponse<void>>(`${this.API_URL}/${caseRef}/reassign`, dto);
   }
 
-  // ─── Case Closure ───────────────────────────────────────────────────────────
 
   closeAsFalsePositive(caseId: string, dto: FalsePositiveClosureRequest, closedBy: string): Observable<ApiResponse<void>> {
     const params = new HttpParams().set('closedBy', closedBy);
@@ -53,13 +51,9 @@ export class CaseService {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/${caseId}/close/str`, dto, { params });
   }
 
-  // ─── Case Escalation ────────────────────────────────────────────────────────
-
   escalateCase(caseRef: string, dto: EscalationRequestDto): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/${caseRef}/escalate`, dto);
   }
-
-  // ─── Case Investigation ─────────────────────────────────────────────────────
 
   openCaseInvestigation(caseId: string, actorId: string): Observable<ApiResponse<void>> {
     const params = new HttpParams().set('actorId', actorId);

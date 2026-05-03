@@ -1,6 +1,5 @@
 import { AlertResponseDto } from './alert.model';
 
-// ─── Enums ───────────────────────────────────────────────────────────────────
 
 export enum CaseStatus {
   OPEN = 'OPEN',
@@ -35,7 +34,6 @@ export enum EscalationStatus {
   RESOLVED = 'RESOLVED'
 }
 
-// ─── Request DTOs ─────────────────────────────────────────────────────────────
 
 export interface CreateCaseRequest {
   alertReferences: string[];
@@ -66,7 +64,6 @@ export interface CaseNoteRequestDto {
   noteContent: string;
 }
 
-// ─── Response DTOs ────────────────────────────────────────────────────────────
 
 export interface CaseCustomerDto {
   id: string;

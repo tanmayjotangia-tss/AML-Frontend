@@ -1,13 +1,7 @@
-// ─── STR Filing Models ────────────────────────────────────────────────────────
-
-// ─── Request DTOs ─────────────────────────────────────────────────────────────
-
 export interface StrFilingRequestDto {
   regulatoryBody: string;
   suspicionNarrative: string;
 }
-
-// ─── Response DTOs ────────────────────────────────────────────────────────────
 
 export interface StrCustomerDto {
   id: string;
