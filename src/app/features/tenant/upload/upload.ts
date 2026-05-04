@@ -247,7 +247,7 @@ export class Upload implements OnInit {
           this.cdr.detectChanges();
 
           const status = res.data.batchStatus;
-          if (status === 'COMPLETED' || status === 'FAILED' || status === 'PARTIAL') {
+          if (status === 'PROCESSED' || status === 'FAILED') {
             clearInterval(interval);
             this.pollingIntervals.delete(batchId);
             console.log(`Polling finished for batch ${batchId}: ${status}`);
@@ -269,10 +269,8 @@ export class Upload implements OnInit {
   getStatusClass(status: BatchStatus): string {
     const map: Record<BatchStatus, string> = {
       PENDING:   'bg-slate-100 text-slate-600',
-      RUNNING:   'bg-blue-100 text-blue-700',
-      COMPLETED: 'bg-green-100 text-green-700',
+      PROCESSED: 'bg-green-100 text-green-700',
       FAILED:    'bg-red-100 text-red-700',
-      PARTIAL:   'bg-amber-100 text-amber-700',
     };
     return map[status] || 'bg-slate-100 text-slate-600';
   }
@@ -280,10 +278,8 @@ export class Upload implements OnInit {
   getStatusIcon(status: BatchStatus): string {
     const icons: Record<BatchStatus, string> = {
       PENDING:   '⏳',
-      RUNNING:   '⚙️',
-      COMPLETED: '✅',
+      PROCESSED: '✅',
       FAILED:    '❌',
-      PARTIAL:   '⚠️',
     };
     return icons[status] || '•';
   }

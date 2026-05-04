@@ -16,25 +16,10 @@ export class TokenService {
     localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
   }
 
-  saveUserInfo(role: string, userId: string, username: string, tenantId?: string): void {
-    const formattedRole = role && role.startsWith('ROLE_') ? role.substring(5) : role;
-    localStorage.setItem(this.ROLE_KEY, formattedRole);
-    localStorage.setItem(this.USERNAME_KEY, username);
-    if (tenantId) {
-      localStorage.setItem(this.TENANT_ID_KEY, tenantId);
-    } else {
-      localStorage.removeItem(this.TENANT_ID_KEY);
-    }
-
-    let finalUserId = userId;
-    if (!finalUserId || finalUserId === 'undefined') {
-      const token = this.getAccessToken();
-      if (token) {
-        const decoded = this.decodeToken(token);
-        if (decoded && decoded.sub) finalUserId = decoded.sub;
-      }
-    }
-    if (finalUserId) localStorage.setItem(this.USER_ID_KEY, finalUserId);
+  private getDecodedToken(): any {
+    const token = this.getAccessToken();
+    if (!token) return null;
+    return this.decodeToken(token);
   }
 
   private decodeToken(token: string): any {
@@ -56,25 +41,33 @@ export class TokenService {
   }
 
   getTenantId(): string | null {
-    return localStorage.getItem(this.TENANT_ID_KEY);
+    const decoded = this.getDecodedToken();
+    return decoded?.tenantId || null;
   }
 
   getRole(): string | null {
-    return localStorage.getItem(this.ROLE_KEY);
+    const decoded = this.getDecodedToken();
+    let role = decoded?.role || decoded?.roles?.[0] || null;
+    if (role && role.startsWith('ROLE_')) {
+      role = role.substring(5);
+    }
+    return role;
   }
 
   getUserId(): string | null {
-    const id = localStorage.getItem(this.USER_ID_KEY);
-    return id === 'undefined' ? null : id;
+    const decoded = this.getDecodedToken();
+    return decoded?.sub || decoded?.userId || null;
   }
 
   getUsername(): string | null {
-    return localStorage.getItem(this.USERNAME_KEY);
+    const decoded = this.getDecodedToken();
+    return decoded?.username || decoded?.sub || null;
   }
 
   clear(): void {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    // These were removed from saveUserInfo but clearing just in case old ones exist
     localStorage.removeItem(this.TENANT_ID_KEY);
     localStorage.removeItem(this.ROLE_KEY);
     localStorage.removeItem(this.USER_ID_KEY);

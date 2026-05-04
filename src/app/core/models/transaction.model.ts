@@ -1,22 +1,30 @@
 export enum TransactionType {
-    CREDIT = 'CREDIT',
-    DEBIT = 'DEBIT',
-    TRANSFER = 'TRANSFER'
+    CASH = 'CASH',
+    TRANSFER = 'TRANSFER',
+    NEFT = 'NEFT',
+    RTGS = 'RTGS',
+    IMPS = 'IMPS',
+    CARD = 'CARD',
+    CHEQUE = 'CHEQUE',
+    DEPOSIT = 'DEPOSIT',
+    WITHDRAWAL = 'WITHDRAWAL'
 }
 
 export enum Channel {
     ATM = 'ATM',
+    MOBILE = 'MOBILE',
     ONLINE = 'ONLINE',
     BRANCH = 'BRANCH',
-    MOBILE = 'MOBILE',
-    SWIFT = 'SWIFT'
+    CASH = 'CASH',
+    POS = 'POS',
+    INTERNET_BANKING = 'INTERNET_BANKING',
+    UPI = 'UPI'
 }
 
 export enum TransactionStatus {
-    COMPLETED = 'COMPLETED',
-    PENDING = 'PENDING',
-    FAILED = 'FAILED',
-    FLAGGED = 'FLAGGED'
+    CLEAN = 'CLEAN',
+    FLAGGED = 'FLAGGED',
+    UNDER_REVIEW = 'UNDER_REVIEW'
 }
 
 export interface TransactionResponseDto {

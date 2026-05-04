@@ -1,17 +1,17 @@
 
 export type BatchFileType = 'CUSTOMER_PROFILE' | 'TRANSACTION';
 
-export type BatchStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'PARTIAL';
+export type BatchStatus = 'PENDING' | 'PROCESSED' | 'FAILED';
 
-export type CustomerType = 'INDIVIDUAL' | 'CORPORATE' | 'JOINT' | 'TRUST';
+export type CustomerType = 'INDIVIDUAL' | 'CORPORATE';
 
-export type KycStatus = 'PENDING' | 'VERIFIED' | 'REJECTED' | 'EXPIRED';
+export type KycStatus = 'VERIFIED' | 'PENDING' | 'EXPIRED';
 
-export type TransactionType = 'CREDIT' | 'DEBIT' | 'TRANSFER' | 'PAYMENT' | 'WITHDRAWAL' | 'DEPOSIT';
+export type TransactionType = 'CASH' | 'TRANSFER' | 'NEFT' | 'RTGS' | 'IMPS' | 'CARD' | 'CHEQUE' | 'DEPOSIT' | 'WITHDRAWAL';
 
-export type Channel = 'BRANCH' | 'ATM' | 'ONLINE' | 'MOBILE' | 'POS' | 'SWIFT';
+export type Channel = 'ATM' | 'MOBILE' | 'ONLINE' | 'BRANCH' | 'CASH' | 'POS' | 'INTERNET_BANKING' | 'UPI';
 
-export type TransactionStatus = 'CLEAN' | 'FLAGGED' | 'SUSPICIOUS' | 'BLOCKED';
+export type TransactionStatus = 'CLEAN' | 'FLAGGED' | 'UNDER_REVIEW';
 
 export interface TransactionBatchResponseDto {
   id: string;

@@ -81,10 +81,11 @@
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
-              <label for="contactEmail" class="form-label">Admin Email</label>
+              <label for="contactEmail" class="form-label">Admin Email <span style="color: #ef4444;">*</span></label>
               <input type="email" id="contactEmail" formControlName="contactEmail" placeholder="admin@institution.com"
                      class="form-input"
-                     [class.invalid]="f['contactEmail'].touched && f['contactEmail'].errors?.['email']">
+                     [class.invalid]="f['contactEmail'].touched && f['contactEmail'].invalid">
+              <div class="form-error" *ngIf="f['contactEmail'].touched && f['contactEmail'].errors?.['required']">Admin email is required.</div>
               <div class="form-error" *ngIf="f['contactEmail'].touched && f['contactEmail'].errors?.['email']">Enter a valid email.</div>
             </div>
 
@@ -101,7 +102,7 @@
 
     <div class="drawer-footer">
       <button type="button" class="btn-ghost" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
-      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="(tenantForm.invalid && !isEditMode) || (isEditMode && (f['institutionName'].invalid || f['countryCode'].invalid)) || isSubmitting">
+      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="(tenantForm.invalid && !isEditMode) || (isEditMode && (f['institutionName'].invalid || f['countryCode'].invalid || f['contactEmail'].invalid)) || isSubmitting">
         <span *ngIf="!isSubmitting">{{ isEditMode ? 'Update Tenant' : 'Provision Tenant' }}</span>
         <div *ngIf="isSubmitting" class="spinner"></div>
       </button>

@@ -9,7 +9,6 @@ export enum CustomerType {
 export enum KycStatus {
     VERIFIED = 'VERIFIED',
     PENDING = 'PENDING',
-    REJECTED = 'REJECTED',
     EXPIRED = 'EXPIRED'
 }
 

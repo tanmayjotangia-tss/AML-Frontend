@@ -55,7 +55,7 @@ export class Tenants implements OnInit {
       },
       error: (err) => {
         console.error('API Error (Tenants):', err);
-        this.error = 'Failed to load tenants.';
+        this.error = err?.error?.message || 'Failed to load tenants.';
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -100,8 +100,8 @@ export class Tenants implements OnInit {
     if (!confirm(`Are you sure you want to reset admin credentials for ${tenant.institutionName}?`)) return;
 
     this.tenantService.resetAdminCredentials(tenant.id).subscribe({
-      next: () => {
-        this.toast.success('Admin credentials have been reset and sent to the contact email.');
+      next: (res) => {
+        this.toast.success(res?.message || 'Admin credentials have been reset and sent to the contact email.');
       },
       error: (err) => {
         this.toast.error(err.error?.message || 'Failed to reset credentials.');

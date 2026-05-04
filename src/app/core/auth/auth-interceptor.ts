@@ -32,7 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(clonedRequest).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !isAlertShowing) {
+      if (error.status === 401 && !isAuthRequest && !isAlertShowing) {
         isAlertShowing = true;
         console.warn('Session expired or revoked. Forcing logout.');
         

@@ -5,6 +5,8 @@ import { LoginRequestDto, LoginResponseDto, ChangePasswordRequestDto } from './m
 import { ApiResponse } from '../../shared/models/api-response.model';
 import { TokenService } from './token';
 import { Router } from '@angular/router';
+import { RuleEngineStateService } from '../services/rule-engine-state.service';
+import { ToastService } from '../services/toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +14,8 @@ import { Router } from '@angular/router';
 export class AuthService {
   private http = inject(HttpClient);
   private tokenService = inject(TokenService);
+  private ruleEngineState = inject(RuleEngineStateService);
+  private toast = inject(ToastService);
   private router = inject(Router);
 
   private readonly API_URL = '/api/v1/auth';
@@ -21,12 +25,6 @@ export class AuthService {
       tap(response => {
         if (response.data) {
           this.tokenService.saveTokens(response.data.accessToken, response.data.refreshToken);
-          this.tokenService.saveUserInfo(
-            response.data.role, 
-            response.data.userId, 
-            response.data.username,
-            response.data.tenantId
-          );
         }
       })
     );
@@ -44,6 +42,13 @@ export class AuthService {
 
   doLocalLogout(): void {
     const role = this.tokenService.getRole();
+    
+    // Clear all stateful services to ensure tenant isolation
+    this.ruleEngineState.reset();
+    // Clear any remaining toasts
+    const currentToasts = this.toast.messages();
+    currentToasts.forEach(t => this.toast.remove(t.id));
+
     this.tokenService.clear();
     if (role === 'SUPER_ADMIN') {
       this.router.navigate(['/admin-login']);

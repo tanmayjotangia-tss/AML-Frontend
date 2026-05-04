@@ -286,11 +286,11 @@ export class CaseDetail implements OnInit {
       noteContent: this.newNoteContent
     };
     this.caseService.addInvestigationNote(this.caseData.id, dto).subscribe({
-      next: () => {
+      next: (res) => {
         this.newNoteContent = '';
         this.isAddingNote = false;
         if (this.caseData) this.caseData.hasInvestigationNote = true;
-        this.toast.success('Note added successfully');
+        this.toast.success(res?.message || 'Note added successfully');
         this.loadAuditTrail(this.caseData!.id); 
         this.cdr.detectChanges();
       },
@@ -311,10 +311,10 @@ export class CaseDetail implements OnInit {
       newAssigneeUserCode: this.reassignAssignee,
       reason: this.reassignReason
     }).subscribe({
-      next: () => {
+      next: (res) => {
         this.isReassigning = false;
         this.showReassignModal = false;
-        this.toast.success('Case reassigned successfully');
+        this.toast.success(res?.message || 'Case reassigned successfully');
         this.loadCaseDetails();
       },
       error: (err) => { 
@@ -332,10 +332,10 @@ export class CaseDetail implements OnInit {
       escalatedTo: this.escalateTo,
       escalationReason: this.escalateReason
     }).subscribe({
-      next: () => {
+      next: (res) => {
         this.isEscalating = false;
         this.showEscalateModal = false;
-        this.toast.success('Case escalated successfully');
+        this.toast.success(res?.message || 'Case escalated successfully');
         this.loadCaseDetails();
       },
       error: (err) => { 
@@ -353,10 +353,10 @@ export class CaseDetail implements OnInit {
     if (this.closeType === 'FALSE_POSITIVE') {
       const closedBy = this.userId || 'system';
       this.caseService.closeAsFalsePositive(this.caseData.id, { rationale: this.closeRationale }, closedBy).subscribe({
-        next: () => {
+        next: (res) => {
           this.isClosing = false;
           this.showCloseModal = false;
-          this.toast.success('Case closed as False Positive');
+          this.toast.success(res?.message || 'Case closed as False Positive');
           this.loadCaseDetails();
         },
         error: (err) => { 

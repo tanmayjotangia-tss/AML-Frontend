@@ -137,6 +137,7 @@ export class CustomerInvestigation implements OnInit {
   getKycClass(status: KycStatus): string {
     if (status === KycStatus.VERIFIED) return 'kyc-verified';
     if (status === KycStatus.PENDING) return 'kyc-pending';
+    if (status === KycStatus.EXPIRED) return 'kyc-expired';
     return 'kyc-failed';
   }
 

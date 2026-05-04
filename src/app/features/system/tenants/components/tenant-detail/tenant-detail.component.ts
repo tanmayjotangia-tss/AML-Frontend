@@ -27,13 +27,15 @@ export class TenantDetailComponent {
     
     this.isProcessing = true;
     this.tenantService.deactivateTenant(this.tenant.id).subscribe({
-      next: () => {
+      next: (res) => {
         this.isProcessing = false;
+        this.toast.success(res?.message || 'Tenant deactivated successfully.');
         this.statusChanged.emit();
         this.close.emit();
       },
-      error: () => {
+      error: (err) => {
         this.isProcessing = false;
+        this.toast.error(err?.error?.message || 'Failed to deactivate tenant.');
       }
     });
   }
@@ -41,13 +43,15 @@ export class TenantDetailComponent {
   reactivate() {
     this.isProcessing = true;
     this.tenantService.reactivateTenant(this.tenant.id).subscribe({
-      next: () => {
+      next: (res) => {
         this.isProcessing = false;
+        this.toast.success(res?.message || 'Tenant reactivated successfully.');
         this.statusChanged.emit();
         this.close.emit();
       },
-      error: () => {
+      error: (err) => {
         this.isProcessing = false;
+        this.toast.error(err?.error?.message || 'Failed to reactivate tenant.');
       }
     });
   }
@@ -57,12 +61,13 @@ export class TenantDetailComponent {
     
     this.isProcessing = true;
     this.tenantService.resetAdminCredentials(this.tenant.id).subscribe({
-      next: () => {
+      next: (res) => {
         this.isProcessing = false;
-        this.toast.success('Admin credentials have been reset and sent to the contact email.');
+        this.toast.success(res?.message || 'Admin credentials have been reset and sent to the contact email.');
       },
-      error: () => {
+      error: (err) => {
         this.isProcessing = false;
+        this.toast.error(err?.error?.message || 'Failed to reset admin credentials.');
       }
     });
   }

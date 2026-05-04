@@ -4,7 +4,6 @@
   flex-direction: column;
   max-width: 1600px;
   margin: 0 auto;
-  font-family: 'Inter', sans-serif;
   background: #f8fafc;
   overflow: hidden;
 }
@@ -42,7 +41,7 @@
   font-weight: 900;
   color: #0f172a;
   margin: 0;
-  font-family: monospace;
+
 }
 
 .priority-badge, .status-badge {
@@ -60,7 +59,7 @@
 }
 
 .sep { margin: 0 0.5rem; color: #cbd5e1; }
-.mono { font-family: monospace; }
+.mono { }
 
 .header-actions {
   display: flex;
@@ -649,7 +648,7 @@
   color: #1e293b;
 }
 
-.filing-val.mono {
+.filing-val {
   color: #6366f1;
 }
 

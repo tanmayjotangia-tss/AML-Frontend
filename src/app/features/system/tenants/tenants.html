@@ -60,7 +60,7 @@
                 {{ tenant.tenantCode }}
               </span>
             </td>
-            <td style="font-family: monospace; font-size: 0.875rem; color: #64748b;">{{ tenant.schemaName }}</td>
+            <td style="font-size: 0.875rem; color: #64748b;">{{ tenant.schemaName }}</td>
             <td>
               <div style="font-weight: 500; color: #0f172a;">{{ tenant.countryCode }}</div>
               <!-- <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">{{ tenant.regulatoryJurisdiction || 'N/A' }}</div> -->
@@ -69,14 +69,12 @@
               <span class="status-pill"
                     [ngClass]="{
                       'active': tenant.status === 'ACTIVE',
-                      'suspended': tenant.status === 'SUSPENDED',
-                      'deactivated': tenant.status === 'DEPROVISIONED'
+                      'suspended': tenant.status === 'SUSPENDED'
                     }">
                 <span class="status-dot"
                       [ngClass]="{
                         'active': tenant.status === 'ACTIVE',
-                        'suspended': tenant.status === 'SUSPENDED',
-                        'deactivated': tenant.status === 'DEPROVISIONED'
+                        'suspended': tenant.status === 'SUSPENDED'
                       }"></span>
                 {{ tenant.status }}
               </span>

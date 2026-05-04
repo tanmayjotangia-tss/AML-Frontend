@@ -180,18 +180,18 @@
               </span>
             </div>
           </div>
-          <div *ngIf="uploadSuccess.batchStatus === 'PENDING' || uploadSuccess.batchStatus === 'RUNNING'" class="processing-area">
+          <div *ngIf="uploadSuccess.batchStatus === 'PENDING'" class="processing-area">
             <div class="progress-container">
-              <div [class]="'progress-bar ' + (uploadSuccess.batchStatus === 'RUNNING' ? 'progress-animated' : 'progress-pending')"></div>
+              <div class="progress-bar progress-pending"></div>
             </div>
             <div class="processing-notice">
               <span class="spinner-sm"></span>
-              <span>{{ uploadSuccess.batchStatus === 'RUNNING' ? 'Processing records...' : 'Waiting in queue...' }}</span>
+              <span>Waiting in queue...</span>
             </div>
           </div>
 
           <!-- Direct failure feedback -->
-          <div *ngIf="uploadSuccess.batchStatus === 'FAILED' || uploadSuccess.batchStatus === 'PARTIAL'" class="failure-alert-mini">
+          <div *ngIf="uploadSuccess.batchStatus === 'FAILED'" class="failure-alert-mini">
             <div class="failure-alert-header">
               <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -233,8 +233,8 @@
               <span class="col-tag">lastActivityDate</span>
               <span class="col-tag">kycStatus</span>
             </div>
-            <p class="guide-enum">customerType: INDIVIDUAL, CORPORATE, JOINT, TRUST</p>
-            <p class="guide-enum">kycStatus: PENDING, VERIFIED, REJECTED, EXPIRED</p>
+            <p class="guide-enum">customerType: INDIVIDUAL, CORPORATE</p>
+            <p class="guide-enum">kycStatus: VERIFIED, PENDING, EXPIRED</p>
           </div>
 
           <div *ngIf="selectedFileType === 'TRANSACTION'" class="guidelines-content">
@@ -253,8 +253,8 @@
               <span class="col-tag">referenceNote</span>
               <span class="col-tag">status</span>
             </div>
-            <p class="guide-enum">transactionType: CREDIT, DEBIT, TRANSFER, PAYMENT, WITHDRAWAL, DEPOSIT</p>
-            <p class="guide-enum">channel: BRANCH, ATM, ONLINE, MOBILE, POS, SWIFT</p>
+            <p class="guide-enum">transactionType: CASH, TRANSFER, NEFT, RTGS, IMPS, CARD, CHEQUE, DEPOSIT, WITHDRAWAL</p>
+            <p class="guide-enum">channel: ATM, MOBILE, ONLINE, BRANCH, CASH, POS, INTERNET_BANKING, UPI</p>
           </div>
         </div>
 

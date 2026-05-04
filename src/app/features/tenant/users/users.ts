@@ -110,16 +110,16 @@ export class Users implements OnInit {
         });
 
     request$.subscribe({
-      next: () => {
-        const message = this.isEditing ? 'User updated successfully' : 'User created successfully and onboarding email sent';
-        this.toast.success(message);
+      next: (res) => {
+        const fallback = this.isEditing ? 'User updated successfully' : 'User created successfully and onboarding email sent';
+        this.toast.success(res?.message || fallback);
         this.closeModal();
         this.loadUsers(0);
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error saving user:', err);
-        this.toast.error('Failed to save user. Please try again.');
+        this.toast.error(err?.error?.message || 'Failed to save user. Please try again.');
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -131,14 +131,14 @@ export class Users implements OnInit {
       this.loading = true;
       this.userService.deactivateUser(id)
         .subscribe({
-          next: () => {
-            this.toast.success('User deactivated successfully');
+          next: (res) => {
+            this.toast.success(res?.message || 'User deactivated successfully');
             this.loadUsers(this.usersPage?.number);
             this.cdr.detectChanges();
           },
           error: (err) => {
             console.error('Error deactivating user:', err);
-            this.toast.error('Failed to deactivate user.');
+            this.toast.error(err?.error?.message || 'Failed to deactivate user.');
             this.loading = false;
             this.cdr.detectChanges();
           }
@@ -150,14 +150,14 @@ export class Users implements OnInit {
     if (confirm('Reset password for this user?')) {
       this.loading = true;
       this.userService.resetPassword(id).subscribe({
-        next: () => {
-          this.toast.success('Password reset successfully. A new temporary password has been emailed.');
+        next: (res) => {
+          this.toast.success(res?.message || 'Password reset successfully. A new temporary password has been emailed.');
           this.loading = false;
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error resetting password:', err);
-          this.toast.error('Failed to reset password.');
+          this.toast.error(err?.error?.message || 'Failed to reset password.');
           this.loading = false;
           this.cdr.detectChanges();
         }
@@ -169,14 +169,14 @@ export class Users implements OnInit {
     if (confirm('Unlock this user account?')) {
       this.loading = true;
       this.userService.unlockUser(id).subscribe({
-        next: () => {
-          this.toast.success('User account unlocked successfully');
+        next: (res) => {
+          this.toast.success(res?.message || 'User account unlocked successfully');
           this.loadUsers(this.usersPage?.number);
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error unlocking user:', err);
-          this.toast.error('Failed to unlock user.');
+          this.toast.error(err?.error?.message || 'Failed to unlock user.');
           this.loading = false;
           this.cdr.detectChanges();
         }

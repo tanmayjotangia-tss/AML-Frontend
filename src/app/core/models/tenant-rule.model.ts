@@ -1,6 +1,8 @@
 export enum RuleStatus {
   ACTIVE = 'ACTIVE',
-  PAUSED = 'PAUSED'
+  PAUSED = 'PAUSED',
+  DRAFT = 'DRAFT',
+  ARCHIVED = 'ARCHIVED'
 }
 
 export interface TenantScenarioResponseDto {

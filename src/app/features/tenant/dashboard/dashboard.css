@@ -2,7 +2,7 @@
   padding: 2rem;
   max-width: 1600px;
   margin: 0 auto;
-  font-family: 'Inter', sans-serif;
+
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -212,7 +212,6 @@
 .w-id {
   font-size: 0.7rem;
   color: #94a3b8;
-  font-family: monospace;
 }
 
 .w-bar-container {
@@ -302,7 +301,7 @@
 }
 
 .case-ref {
-  font-family: monospace;
+
   font-weight: 800;
   color: #0f172a;
   font-size: 1.1rem;
@@ -370,7 +369,7 @@
   align-items: center;
 }
 
-.alert-ref { font-family: monospace; font-weight: 700; color: #1e293b; font-size: 0.9rem; }
+.alert-ref { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
 .alert-score { font-size: 0.75rem; font-weight: 800; color: #6366f1; }
 
 .alert-desc {

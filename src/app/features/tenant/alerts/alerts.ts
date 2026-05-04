@@ -352,7 +352,7 @@ export class Alerts implements OnInit {
     };
 
     this.caseService.createCase(dto).subscribe({
-      next: () => {
+      next: (res) => {
         this.isCreatingCase = false;
         this.showCreateCaseModal = false;
         this.selectedAlertIds.clear();
@@ -360,7 +360,7 @@ export class Alerts implements OnInit {
         this.cdr.detectChanges();
         // Optional: show alert after modal is closed
         setTimeout(() => {
-          this.toast.success('Case created successfully');
+          this.toast.success(res?.message || 'Case created successfully');
         }, 100);
       },
       error: (err: any) => {

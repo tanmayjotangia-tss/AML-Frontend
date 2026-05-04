@@ -18,8 +18,7 @@ export enum CasePriority {
 
 export enum ClosureDisposition {
   STR_FILED = 'STR_FILED',
-  FALSE_POSITIVE = 'FALSE_POSITIVE',
-  INCONCLUSIVE = 'INCONCLUSIVE'
+  FALSE_POSITIVE = 'FALSE_POSITIVE'
 }
 
 export enum NoteType {

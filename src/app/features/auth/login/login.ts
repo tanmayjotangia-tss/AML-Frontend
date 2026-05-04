@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth';
 import { LoginRequestDto, ChangePasswordRequestDto } from '../../../core/auth/models/auth.models';
+import { TokenService } from '../../../core/auth/token';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +17,8 @@ import { LoginRequestDto, ChangePasswordRequestDto } from '../../../core/auth/mo
 export class Login implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private tokenService = inject(TokenService);
+  private toast = inject(ToastService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -76,24 +80,72 @@ export class Login implements OnInit {
 
     this.authService.login(req).subscribe({
       next: (res) => {
-        this.isSubmitting = false;
-        
-        const role = res.data?.role;
-        const isSuperAdmin = role === 'SUPER_ADMIN' || role === 'ROLE_SUPER_ADMIN';
-        
-        if (res.data?.isFirstLogin && !isSuperAdmin) {
-          this.isFirstLogin = true;
-          this.changePasswordForm.patchValue({ oldPassword: req.password });
-        } else {
-          this.routeUser(role);
+        try {
+          this.isSubmitting = false;
+          
+          // Handle cases where the backend might return success HTTP status but internal error
+          if (res.status && res.status !== 200 && res.status !== 201) {
+            this.loginError = res.message || 'Authentication failed.';
+            this.toast.error(this.loginError);
+            return;
+          }
+
+          const role = res.data?.role;
+          const isSuperAdmin = role === 'SUPER_ADMIN' || role === 'ROLE_SUPER_ADMIN';
+          
+          if (res.data?.isFirstLogin && !isSuperAdmin) {
+            this.isFirstLogin = true;
+            this.changePasswordForm.patchValue({ oldPassword: req.password });
+          } else {
+            this.routeUser(role);
+          }
+        } catch (e) {
+          console.error('Error processing login success:', e);
+          this.loginError = 'An unexpected error occurred during login. Please try again.';
+          this.toast.error(this.loginError);
         }
       },
       error: (err) => {
+        console.error('Login error:', err);
+        this.isSubmitting = false;
+        
+        // Comprehensive error message extraction
+        let errorMessage = '';
+        
+        if (err.error) {
+          if (typeof err.error === 'object') {
+            errorMessage = err.error.message || err.error.detail || err.error.error || '';
+          } else if (typeof err.error === 'string') {
+            try {
+              const parsed = JSON.parse(err.error);
+              errorMessage = parsed.message || parsed.detail || parsed.error || '';
+            } catch {
+              // If it's a string but not JSON, and looks like an error message, use it
+              if (err.error.length < 200) {
+                errorMessage = err.error;
+              }
+            }
+          }
+        }
+        
+        if (!errorMessage && err.message) {
+          // Angular's default message often contains the status code and text
+          errorMessage = err.message;
+        }
+        
+        this.loginError = errorMessage || 'Authentication failed. Please check your credentials.';
+        
+        // Specific handling for common auth errors and generic backend fallbacks
+        const lowError = this.loginError.toLowerCase();
+        if (lowError.includes('bad credentials') || 
+            lowError.includes('unexpected system error') || 
+            lowError.includes('internal server error') ||
+            lowError.includes('unhandled exception')) {
+          this.loginError = 'Invalid email or password. Please try again.';
+        }
 
-        setTimeout(() => {
-          this.isSubmitting = false;
-          this.loginError = err.error?.message || 'Authentication failed. Please check your credentials.';
-        });
+        // Show toast as well to ensure it's seen
+        this.toast.error(this.loginError);
       }
     });
   }
@@ -113,14 +165,13 @@ export class Login implements OnInit {
     this.authService.changePassword(req).subscribe({
       next: () => {
         this.isSubmitting = false;
-        const role = localStorage.getItem('user_role'); 
+        const role = this.tokenService.getRole(); 
         this.routeUser(role || '');
       },
       error: (err) => {
-        setTimeout(() => {
-          this.isSubmitting = false;
-          this.loginError = err.error?.message || 'Failed to change password. Please ensure your old password is correct.';
-        });
+        console.error('Password change error:', err);
+        this.isSubmitting = false;
+        this.loginError = err.error?.message || 'Failed to change password. Please ensure your old password is correct.';
       }
     });
   }

@@ -128,16 +128,15 @@ export class TransactionInvestigation implements OnInit {
 
   getStatusClass(status: TransactionStatus): string {
     const map: Record<string, string> = {
-      COMPLETED: 'status-completed',
-      PENDING: 'status-pending',
-      FAILED: 'status-failed',
-      FLAGGED: 'status-flagged'
+      CLEAN: 'status-clean',
+      FLAGGED: 'status-flagged',
+      UNDER_REVIEW: 'status-under-review'
     };
     return map[status] || '';
   }
 
   getTypeClass(type: TransactionType): string {
-    return type === TransactionType.CREDIT ? 'type-credit' : 'type-debit';
+    return 'type-default';
   }
 
   goToUpload(): void {

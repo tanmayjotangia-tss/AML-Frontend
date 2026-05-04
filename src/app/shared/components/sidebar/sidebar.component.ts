@@ -53,7 +53,6 @@ export interface NavItem {
       left: 0;
       top: 0;
       z-index: 100;
-      font-family: 'Inter', sans-serif;
       transition: transform 0.3s ease;
     }
 

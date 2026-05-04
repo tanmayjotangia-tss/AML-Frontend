@@ -147,12 +147,13 @@ export class RuleEngine implements OnInit {
       this.loading = true;
       this.tenantScenarioService.activateScenario(globalId)
         .subscribe({
-          next: () => {
-            this.toast.success('Scenario activated successfully');
+          next: (res) => {
+            this.toast.success(res?.message || 'Scenario activated successfully');
             this.setTab('MY_SCENARIOS');
           },
           error: (err) => {
             console.error('Error activating scenario:', err);
+            this.toast.error(err?.error?.message || 'Failed to activate scenario.');
             this.loading = false;
           }
         });
@@ -360,7 +361,7 @@ export class RuleEngine implements OnInit {
       }))
       .subscribe({
         next: (res) => {
-          this.toast.success('Threshold overrides saved successfully!');
+          this.toast.success(res?.message || 'Threshold overrides saved successfully!');
           this.closeThresholdModal();
         },
         error: (err) => {

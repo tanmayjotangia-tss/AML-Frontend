@@ -29,8 +29,13 @@ export class RuleEngineStateService {
     this.showExecutionPanel.set(value);
   }
 
-  clearExecution() {
+  reset() {
+    this.isExecuting.set(false);
     this.executionResult.set(null);
     this.executionError.set(null);
+    this.showExecutionPanel.set(false);
+    this.executionMode.set('LIVE');
+    this.execStartDate.set('');
+    this.execEndDate.set('');
   }
 }

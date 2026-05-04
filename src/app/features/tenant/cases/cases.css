@@ -33,7 +33,7 @@
 .case-table td { padding: 1rem; vertical-align: middle; }
 
 .case-ref-chip {
-  font-family: monospace; font-weight: 700; background: #f1f5f9; padding: 0.25rem 0.5rem;
+  font-weight: 700; background: #f1f5f9; padding: 0.25rem 0.5rem;
   border-radius: 0.5rem; color: #0f172a; font-size: 0.85rem;
 }
 
@@ -44,7 +44,7 @@
 
 .customer-info { display: flex; flex-direction: column; }
 .customer-info .name { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
-.customer-info .acc { font-size: 0.75rem; color: #94a3b8; font-family: monospace; }
+.customer-info .acc { font-size: 0.75rem; color: #94a3b8; }
 
 .btn-investigate {
   padding: 0.4rem 1rem; background: #6366f1; color: white; border: none;

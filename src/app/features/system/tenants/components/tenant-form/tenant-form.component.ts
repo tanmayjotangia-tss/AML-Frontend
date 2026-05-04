@@ -23,7 +23,7 @@ export class TenantFormComponent implements OnInit {
   tenantForm!: FormGroup;
   isSubmitting = false;
   submitError = '';
-  tenantStatuses = ['ACTIVE', 'SUSPENDED', 'DEPROVISIONED'];
+  tenantStatuses = ['ACTIVE', 'SUSPENDED'];
 
   get isEditMode(): boolean {
     return !!this.tenantToEdit;
@@ -59,7 +59,7 @@ export class TenantFormComponent implements OnInit {
       institutionName: ['', [Validators.required, Validators.maxLength(255)]],
       countryCode: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(3)]],
       regulatoryJurisdiction: ['', [Validators.maxLength(100)]],
-      contactEmail: ['', [Validators.email, Validators.maxLength(255)]],
+      contactEmail: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
       contactPhone: ['', [Validators.maxLength(50)]],
       address: [''],
       status: ['ACTIVE', [Validators.required]]

@@ -141,7 +141,6 @@
 }
 
 .ref-cell {
-  font-family: ui-monospace, monospace;
   font-weight: 700;
   color: #3b82f6;
   white-space: nowrap;
@@ -174,7 +173,6 @@
 .party-cell-content .acc {
   font-size: 0.75rem;
   color: #94a3b8;
-  font-family: ui-monospace, monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

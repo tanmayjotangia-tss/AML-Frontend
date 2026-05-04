@@ -2,7 +2,7 @@
   padding: 2.5rem;
   max-width: 1400px;
   margin: 0 auto;
-  font-family: 'Inter', sans-serif;
+
   min-height: 100vh;
   background: #f8fafc;
 }
@@ -90,7 +90,7 @@
 }
 
 .case-ref {
-  font-family: monospace;
+
   font-weight: 800;
   color: #6366f1;
   font-size: 1.1rem;
