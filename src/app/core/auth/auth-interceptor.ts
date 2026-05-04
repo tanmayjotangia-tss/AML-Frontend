@@ -32,21 +32,29 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(clonedRequest).pipe(
     catchError((error: HttpErrorResponse) => {
+      // 401 means session expired or revoked
       if (error.status === 401 && !isAuthRequest && !isAlertShowing) {
         isAlertShowing = true;
-        console.warn('Session expired or revoked. Forcing logout.');
         
-        toast.error('Your session has expired. Please log in again.');
+        // Try to get role from token before clearing, fallback to URL detection
+        let role = tokenService.getRole();
+        const currentUrl = router.url;
         
-        const role = tokenService.getRole();
         tokenService.clear();
         
-        isAlertShowing = false;
-        if (role === 'SUPER_ADMIN') {
+        toast.error('Your session has expired. Please log in again.');
+
+        // Determine correct login page
+        if (role === 'SUPER_ADMIN' || currentUrl.startsWith('/system')) {
           router.navigate(['/admin-login']);
         } else {
           router.navigate(['/login']);
         }
+
+        // Reset flag after a delay to allow navigation to complete
+        setTimeout(() => {
+          isAlertShowing = false;
+        }, 1000);
       }
       return throwError(() => error);
     })

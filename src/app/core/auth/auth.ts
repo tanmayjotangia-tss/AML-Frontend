@@ -62,6 +62,6 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.tokenService.getAccessToken();
+    return !!this.tokenService.getAccessToken() && !this.tokenService.isTokenExpired();
   }
 }

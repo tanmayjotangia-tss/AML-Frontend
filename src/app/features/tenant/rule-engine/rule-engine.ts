@@ -7,9 +7,9 @@ import { GlobalRuleService } from '../../../core/services/global-rule.service';
 import { RuleEngineStateService } from '../../../core/services/rule-engine-state.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { TokenService } from '../../../core/auth/token';
-import { 
-  TenantScenarioWithRulesDto, 
-  RuleStatus, 
+import {
+  TenantScenarioWithRulesDto,
+  RuleStatus,
   TenantRuleResponseDto,
   TenantRuleThresholdResponseDto,
   UpdateTenantRuleRequestDto,
@@ -47,16 +47,16 @@ export class RuleEngine implements OnInit {
   // State
   myScenarios: TenantScenarioWithRulesDto[] = [];
   availableGlobalScenarios: GlobalScenarioResponseDto[] = [];
-  
+
   // Detail State
   selectedScenario?: TenantScenarioWithRulesDto;
   selectedRule?: TenantRuleResponseDto;
   thresholds: TenantRuleThresholdResponseDto[] = [];
   globalConditions: GlobalRuleConditionResponseDto[] = [];
-  
+
   // Track local changes before saving
   pendingOverrides: Record<string, { value: string, lookback: string }> = {};
-  
+
   // Modals
   showThresholdModal = false;
   thresholdForm: FormGroup;
@@ -168,15 +168,7 @@ export class RuleEngine implements OnInit {
     this.tenantScenarioService.resumeScenario(id).subscribe(() => this.loadMyScenarios());
   }
 
-  toggleRule(rule: TenantRuleResponseDto): void {
-    this.tenantScenarioService.toggleScenarioRule(rule.id, !rule.active).subscribe({
-      next: (res) => {
-        rule.active = res.data.active ?? res.data.isActive ?? !rule.active;
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error toggling rule:', err)
-    });
-  }
+
 
   viewScenarioDetails(scenario: TenantScenarioWithRulesDto): void {
     this.selectedScenario = scenario;
@@ -289,7 +281,7 @@ export class RuleEngine implements OnInit {
     ).subscribe({
       next: (res) => {
         this.thresholds = res.thresholds.data || [];
-        
+
         // Handle both direct array and paginated response
         const conditionsData = res.globalConditions.data;
         if (Array.isArray(conditionsData)) {
@@ -299,7 +291,7 @@ export class RuleEngine implements OnInit {
         } else {
           this.globalConditions = [];
         }
-        
+
         // Initialize pending overrides from existing ones
         this.pendingOverrides = {};
         this.globalConditions.forEach(cond => {
@@ -344,7 +336,7 @@ export class RuleEngine implements OnInit {
           return {
             tenantRuleCode: this.selectedRule!.ruleCode,
             globalConditionCode: cond.conditionCode,
-            globalConditionId: cond.id, 
+            globalConditionId: cond.id,
             overrideValue: pending.value || null,
             overrideLookbackPeriod: pending.lookback || null
           };
@@ -355,9 +347,9 @@ export class RuleEngine implements OnInit {
 
     this.loading = true;
     this.tenantRuleService.bulkUpdateThresholds(this.selectedRule.id, overridesToSave as any)
-      .pipe(finalize(() => { 
-        this.loading = false; 
-        this.cdr.detectChanges(); 
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
       }))
       .subscribe({
         next: (res) => {

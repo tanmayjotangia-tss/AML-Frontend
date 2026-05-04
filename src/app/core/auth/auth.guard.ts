@@ -10,6 +10,14 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  router.navigate(['/login']);
+  // Session expired or not authenticated
+  const targetUrl = state.url;
+  
+  if (targetUrl.startsWith('/system')) {
+    router.navigate(['/admin-login']);
+  } else {
+    router.navigate(['/login']);
+  }
+
   return false;
 };

@@ -16,6 +16,15 @@ export class TokenService {
     localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
   }
 
+  isTokenExpired(): boolean {
+    const token = this.getAccessToken();
+    if (!token) return true;
+    const decoded = this.decodeToken(token);
+    if (!decoded || !decoded.exp) return false;
+    const now = Math.floor(Date.now() / 1000);
+    return decoded.exp < now;
+  }
+
   private getDecodedToken(): any {
     const token = this.getAccessToken();
     if (!token) return null;
@@ -67,7 +76,6 @@ export class TokenService {
   clear(): void {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    // These were removed from saveUserInfo but clearing just in case old ones exist
     localStorage.removeItem(this.TENANT_ID_KEY);
     localStorage.removeItem(this.ROLE_KEY);
     localStorage.removeItem(this.USER_ID_KEY);
