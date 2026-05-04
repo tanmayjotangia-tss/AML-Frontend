@@ -100,11 +100,11 @@ export class Tenants implements OnInit {
     if (!confirm(`Are you sure you want to reset admin credentials for ${tenant.institutionName}?`)) return;
 
     this.tenantService.resetAdminCredentials(tenant.id).subscribe({
-      next: (res) => {
-        this.toast.success(res?.message || 'Admin credentials have been reset and sent to the contact email.');
+      next: () => {
+        // Interceptor handles the success toast
       },
-      error: (err) => {
-        this.toast.error(err.error?.message || 'Failed to reset credentials.');
+      error: () => {
+        // Interceptor handles the error toast
       }
     });
   }
