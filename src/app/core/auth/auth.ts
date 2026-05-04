@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { LoginRequestDto, LoginResponseDto, ChangePasswordRequestDto } from './models/auth.models';
 import { ApiResponse } from '../../shared/models/api-response.model';
 import { TokenService } from './token';
@@ -32,7 +32,11 @@ export class AuthService {
 
   logout(): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(`${this.API_URL}/logout`, {}).pipe(
-      tap(() => this.doLocalLogout())
+      tap(() => this.doLocalLogout()),
+      catchError(error => {
+        this.doLocalLogout();
+        return throwError(() => error);
+      })
     );
   }
 

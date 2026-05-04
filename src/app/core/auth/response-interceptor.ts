@@ -21,6 +21,11 @@ export const responseInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
+      // Skip error toast for logout requests as we handle local logout anyway
+      if (req.url.includes('/logout')) {
+        return throwError(() => error);
+      }
+
       let errorMessage = 'An unexpected system error occurred';
       
       if (error.status === 0) {
